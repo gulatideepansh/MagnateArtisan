@@ -1,0 +1,51 @@
+[
+  {
+    "slug": "rococo",
+    "name": "Rococo",
+    "summary": "Royal historical tailoring, ornate embroidery, capes, waistcoats, and theatre-grade presence.",
+    "count": 30,
+    "coverImage": "/catalog/men-s-black18th-century-3-piece-rococo-embroidered-suit-theme-wedding-venice-carnival-outfit/image-01.jpg"
+  },
+  {
+    "slug": "mariachi",
+    "name": "Mariachi",
+    "summary": "Formal charro silhouettes with metallic embroidery, ceremony detailing, and stage-ready structure.",
+    "count": 17,
+    "coverImage": "/catalog/men-s-customized-ivory-mariachi-3-piece-embroidered-charro-wedding-groom-suit/image-01.jpg"
+  },
+  {
+    "slug": "matador",
+    "name": "Matador",
+    "summary": "Spanish bolero jackets, sculpted shoulders, cape details, and dramatic ceremonial craft.",
+    "count": 4,
+    "coverImage": "/catalog/lavender-embroidered-women-s-matador-jacket-gold-work-cropped-spanish-style-with-beaded-shoulde/image-01.jpg"
+  },
+  {
+    "slug": "country-western",
+    "name": "Country Western",
+    "summary": "Cowboy tailoring, fringe work, rhinestones, florals, and western wedding statement pieces.",
+    "count": 55,
+    "coverImage": "/catalog/men-s-emerald-green-velvet-indo-western-blazer-hand-embroidered-royal-crest-jacket/image-01.jpg"
+  },
+  {
+    "slug": "womens-couture",
+    "name": "Women's Couture",
+    "summary": "Bespoke women's jackets, skirt sets, crop silhouettes, and embroidered occasionwear.",
+    "count": 6,
+    "coverImage": "/catalog/women-s-luxury-rust-velvet-starry-night-collection-3-piece-embroidered-suit-set/image-01.jpg"
+  },
+  {
+    "slug": "wedding-festive",
+    "name": "Wedding & Festive",
+    "summary": "Ceremony and reception pieces built around measurement, ornament, and arrival.",
+    "count": 24,
+    "coverImage": "/catalog/men-s-black-embellished-floral-blazer-hand-beaded-rhinestone-sequin-designer-jacket-luxury-wedd/image-01.jpg"
+  },
+  {
+    "slug": "bespoke-custom",
+    "name": "Bespoke Custom",
+    "summary": "Made-to-measure commissions shaped around reference images, embroidery ideas, and occasion timing.",
+    "count": 2,
+    "coverImage": "/catalog/men-s-black-embroidered-tuxedo-blazer-luxury-floral-shawl-lapel-dinner-jacket/image-01.jpg"
+  }
+]
