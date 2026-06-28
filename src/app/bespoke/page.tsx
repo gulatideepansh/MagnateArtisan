@@ -1,22 +1,20 @@
-import { MessageCircle, Palette, Ruler, Timer, Upload } from "lucide-react";
-import { ButtonLink } from "@/components/button-link";
+import { CalendarDays, MessageCircle, Palette, Ruler, Scissors, Timer, Upload } from "lucide-react";
+import { BespokeInquiryForm } from "@/components/bespoke-inquiry-form";
 import { MeasurementGuides } from "@/components/measurement-guides";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
-import { whatsappUrl } from "@/lib/whatsapp";
 
 const steps = [
-  { icon: Upload, title: "Share the reference", copy: "Choose a catalog piece, AI try-on preview, or your own inspiration images." },
-  { icon: Ruler, title: "Confirm measurements", copy: "Send body measurements, fit preference, event date, and delivery country." },
+  { icon: Upload, title: "Share the reference", copy: "Choose a catalog piece, paste a product link, or describe the custom direction you want." },
+  { icon: CalendarDays, title: "Set the occasion", copy: "Send the event type, city, delivery country, and date so timing is clear from the first message." },
+  { icon: Ruler, title: "Confirm measurements", copy: "Use the measurement guide, send existing sizes, or ask for help before final sizing is confirmed." },
   { icon: Palette, title: "Shape the craft", copy: "Discuss fabric, embroidery motifs, rhinestone level, color, lining, and finishing." },
   { icon: Timer, title: "Approve the timeline", copy: "The order continues through direct consultation rather than a generic checkout." },
 ];
 
 export default function BespokePage() {
-  const url = whatsappUrl(undefined, "I want to begin a bespoke Magnate Artisan order. I can share measurements, event date, inspiration images, and customization notes.");
-
   return (
     <>
       <SiteHeader />
@@ -35,22 +33,16 @@ export default function BespokePage() {
                 <span>Full measurements or measurement guide photos</span>
                 <span>Event date and required delivery location</span>
                 <span>Color, fabric, embroidery, rhinestone, and reference image notes</span>
-                <span>AI try-on preview if generated</span>
+                <span>Preferred fit, lining, button, cape, trouser, skirt, or jacket adjustments</span>
               </div>
-              <a
-                id="contact"
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-8 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#5b1625] px-5 text-sm font-medium uppercase tracking-[0.16em] text-[#fff4df] transition hover:bg-[#731e31]"
-              >
+              <a href="#contact" className="mt-8 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#5b1625] px-5 text-sm font-medium uppercase tracking-[0.16em] text-[#fff4df] transition hover:bg-[#731e31]">
                 <MessageCircle size={17} />
-                Start on WhatsApp
+                Build Inquiry Brief
               </a>
             </div>
           </div>
 
-          <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
             {steps.map((step) => (
               <article key={step.title} className="luxury-panel p-6">
                 <step.icon className="text-[#e4c982]" size={28} />
@@ -60,23 +52,35 @@ export default function BespokePage() {
             ))}
           </div>
 
-          <div className="mt-14 border border-[#b99858]/25 p-8 text-center">
-            <p className="display text-5xl text-[#fff4df]">Want to preview first?</p>
-            <p className="mx-auto mt-4 max-w-2xl leading-8 text-[#b7aa99]">
-              Use AI try-on before opening the conversation, then attach the generated preview to the WhatsApp inquiry.
-            </p>
-            <ButtonLink href="/try-on" className="mt-7">
-              Try a garment
-            </ButtonLink>
+          <div className="mt-14">
+            <BespokeInquiryForm />
           </div>
 
-          <div className="mt-20">
+          <div id="measurements" className="mt-20 scroll-mt-28">
             <SectionHeading
-              title="Fitting guide animations."
-              copy="The downloaded measurement WebP guides are included here so clients can prepare useful sizing notes before sending a custom inquiry."
+              title="Measurement guidance."
+              copy="Use these fitting guides to prepare useful sizing notes before sending a custom inquiry. If the customer is unsure, they can still send the inquiry first and ask for guidance."
             />
             <div className="mt-10">
               <MeasurementGuides />
+            </div>
+          </div>
+
+          <div className="mt-20 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div>
+              <Scissors className="text-[#e4c982]" size={34} />
+              <h2 className="display mt-6 text-5xl text-[#fff4df] md:text-7xl">Craft begins with the occasion.</h2>
+            </div>
+            <div className="grid gap-5">
+              {[
+                "The first decision is not the fabric. It is the entrance: ceremony, lighting, movement, photography, and cultural reference.",
+                "From there, embroidery density, silhouette, rhinestone work, lining, buttons, cape length, trouser shape, and finishing are shaped around the client.",
+                "Every inquiry stays direct because made-to-order garments need context that a cart cannot capture."
+              ].map((copy) => (
+                <p key={copy} className="border-l border-[#b99858]/45 pl-6 leading-8 text-[#b7aa99]">
+                  {copy}
+                </p>
+              ))}
             </div>
           </div>
         </section>

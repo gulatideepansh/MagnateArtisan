@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, MessageCircle, Ruler, Scissors, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Scissors } from "lucide-react";
 import { ButtonLink } from "@/components/button-link";
 import { CollectionCard } from "@/components/collection-card";
 import { ProductCard } from "@/components/product-card";
@@ -48,15 +48,15 @@ export default function Home() {
             <div className="max-w-3xl">
               <div className="mb-8 h-px w-36 bg-[#b99858]" />
               <h1 className="display text-balance text-6xl leading-[0.9] text-[#fff4df] md:text-8xl">
-                Bespoke embroidery, fitted through AI preview.
+                Bespoke statementwear, made for entrance.
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-9 text-[#d7cbbb]">
-                Explore 138 made-to-measure statement pieces, preview a look on your own photo, then start a WhatsApp consultation for sizing, fabric, embroidery, and timing.
+                Explore 138 embroidered suits, couture pieces, and ceremonial looks, then send a focused WhatsApp brief for sizing, fabric, embroidery, delivery timing, and customization.
               </p>
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-                <ButtonLink href="/try-on">
-                  <Sparkles size={17} />
-                  Try This Piece
+                <ButtonLink href="/bespoke#contact">
+                  <MessageCircle size={17} />
+                  Start Bespoke Inquiry
                 </ButtonLink>
                 <ButtonLink href="/collections" tone="ghost">
                   View Collections
@@ -87,15 +87,15 @@ export default function Home() {
         <section className="bg-black/24 py-24">
           <div className="atelier-shell">
             <SectionHeading
-              title="AI previews stay secondary to craft."
-              copy="The try-on flow helps a client imagine proportion and presence. Final decisions still move through measurements, fabric choices, embroidery notes, and human consultation."
+              title="Quick inquiry, serious detail."
+              copy="The site is built around a direct custom-order conversation. Pick a piece, send the occasion and measurements, then shape color, fabric, embroidery, and timing with the atelier."
               align="center"
             />
             <div className="mt-12 grid gap-5 md:grid-cols-3">
               {[
-                { icon: Sparkles, title: "Upload", copy: "Customer uploads a clear photo and selects a garment from the catalog." },
-                { icon: Ruler, title: "Preview", copy: "Leffa generates a visual fitting reference through the local GPU service." },
-                { icon: MessageCircle, title: "Consult", copy: "The result is attached to a WhatsApp inquiry for bespoke order discussion." },
+                { icon: MessageCircle, title: "Send", copy: "Choose a catalog piece or custom idea and send it with your occasion, city, and event date." },
+                { icon: Ruler, title: "Measure", copy: "Use the measurement guide to prepare sizing notes before the consultation begins." },
+                { icon: Palette, title: "Customize", copy: "Discuss color, fabric, embroidery motifs, rhinestone level, lining, and finishing." },
               ].map((item) => (
                 <div key={item.title} className="luxury-panel p-7">
                   <item.icon className="text-[#e4c982]" size={30} />
@@ -109,7 +109,7 @@ export default function Home() {
 
         <section className="atelier-shell py-24">
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-            <SectionHeading title="Featured pieces." copy="Large-format product pages keep the real photography primary, with AI outputs clearly marked as previews." />
+            <SectionHeading title="Featured pieces." copy="Large-format product pages keep real photography primary, with clear notes for customization, measurements, and WhatsApp inquiry." />
             <ButtonLink href="/collections" tone="ghost">All Pieces</ButtonLink>
           </div>
           <div className="mt-12 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
@@ -126,7 +126,7 @@ export default function Home() {
               <Scissors className="text-[#e4c982]" size={34} />
               <h2 className="display mt-6 text-5xl text-[#fff4df] md:text-7xl">Made for the moment, then made to measure.</h2>
               <p className="mt-6 leading-8 text-[#b7aa99]">
-                The site avoids checkout because these garments are not impulse purchases. Each inquiry should carry occasion, measurements, delivery date, customization notes, and any AI preview the client created.
+                The site avoids checkout because these garments are not impulse purchases. Each inquiry should carry occasion, measurements, delivery date, customization notes, color direction, and reference imagery.
               </p>
               <ButtonLink href="/bespoke" className="mt-8" tone="wine">Start Bespoke Inquiry</ButtonLink>
             </div>
@@ -134,16 +134,39 @@ export default function Home() {
               {featuredProducts(4).map((product) => (
                 <div key={product.slug} className="relative aspect-[4/5] overflow-hidden bg-[#17120e]">
                   <Image
-                    src={product.tryOnOutputs[0] || product.primaryImage}
-                    alt={`${product.title} AI preview`}
+                    src={product.primaryImage}
+                    alt={product.title}
                     fill
                     sizes="30vw"
                     className="object-cover"
                   />
                   <span className="absolute left-3 top-3 bg-black/64 px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-[#e4c982]">
-                    AI Preview
+                    Made to order
                   </span>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#0b0806] py-24">
+          <div className="atelier-shell grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <SectionHeading
+              title="Information that speeds up the consultation."
+              copy="A strong first message reduces back-and-forth. Customers can send the piece, deadline, location, sizing status, and customization direction before the first reply."
+            />
+            <div className="grid gap-4 md:grid-cols-2">
+              {[
+                { icon: CalendarDays, title: "Occasion and date", copy: "Wedding, stage, gala, ceremony, carnival, rodeo, reception, or private commission." },
+                { icon: Ruler, title: "Sizing status", copy: "Full measurements if ready, or a note that measurement guidance is needed." },
+                { icon: Palette, title: "Design direction", copy: "Color palette, embroidery motif, rhinestone level, fabric feel, lining, and references." },
+                { icon: MessageCircle, title: "WhatsApp handoff", copy: "The bespoke page turns these notes into a structured message for faster quoting." },
+              ].map((item) => (
+                <article key={item.title} className="border border-[#b99858]/25 p-6">
+                  <item.icon className="text-[#e4c982]" size={26} />
+                  <h3 className="display mt-5 text-3xl text-[#f6efe3]">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-[#b7aa99]">{item.copy}</p>
+                </article>
               ))}
             </div>
           </div>

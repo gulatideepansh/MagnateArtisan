@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 const nav = [
   { href: "/collections", label: "Collections" },
   { href: "/bespoke", label: "Bespoke" },
-  { href: "/try-on", label: "AI Try-On" },
   { href: "/#craftsmanship", label: "Craftsmanship" },
+  { href: "/bespoke#measurements", label: "Measurements" },
   { href: "/bespoke#contact", label: "Contact" },
 ];
 
@@ -31,11 +31,11 @@ export function SiteHeader() {
         </nav>
 
         <Link
-          href="/try-on"
+          href="/bespoke#contact"
           className="inline-flex h-11 w-11 items-center justify-center gap-2 border border-[#b99858]/55 text-sm uppercase tracking-[0.16em] text-[#fff4df] transition hover:border-[#e4c982] hover:bg-[#b99858]/10 sm:w-auto sm:px-4"
         >
-          <Sparkles size={16} />
-          <span className="hidden sm:inline">Try On</span>
+          <MessageCircle size={16} />
+          <span className="hidden sm:inline">Inquire</span>
         </Link>
       </div>
     </header>

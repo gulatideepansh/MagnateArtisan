@@ -7,18 +7,18 @@ export function SiteFooter() {
         <div>
           <p className="display text-3xl text-[#f6efe3]">Magnate Artisan</p>
           <p className="mt-3 max-w-md leading-7">
-            Bespoke embroidered occasionwear with AI-assisted previews and human-led custom ordering.
+            Bespoke embroidered occasionwear shaped around ceremonies, performances, weddings, and statement entrances.
           </p>
         </div>
         <div className="grid gap-3">
           <Link href="/collections">Collections</Link>
-          <Link href="/try-on">AI Try-On</Link>
           <Link href="/bespoke">Bespoke Inquiry</Link>
+          <Link href="/bespoke#measurements">Measurements</Link>
         </div>
         <div className="grid gap-3">
           <span>No cart. No checkout.</span>
           <span>WhatsApp-first ordering.</span>
-          <span>AI previews are visual guides only.</span>
+          <span>Made-to-order consultation.</span>
         </div>
       </div>
     </footer>

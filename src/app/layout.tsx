@@ -19,9 +19,9 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Magnate Artisan | Bespoke AI Try-On Atelier",
+  title: "Magnate Artisan | Bespoke Embroidered Atelier",
   description:
-    "Luxury bespoke embroidered suits, AI virtual try-on previews, and WhatsApp-first custom ordering.",
+    "Luxury bespoke embroidered suits, couture pieces, and WhatsApp-first custom ordering for weddings, ceremonies, stagewear, and statement occasions.",
 };
 
 export default function RootLayout({

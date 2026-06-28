@@ -3,7 +3,7 @@ import { absoluteProductUrl } from "@/lib/utils";
 
 const fallbackNumber = "61400000000";
 
-export function whatsappUrl(product?: Product, customNote?: string, tryOnReference?: string) {
+export function whatsappUrl(product?: Product, customNote?: string, referenceNote?: string) {
   const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || fallbackNumber;
   const lines = [
     "Hello Magnate Artisan,",
@@ -13,9 +13,9 @@ export function whatsappUrl(product?: Product, customNote?: string, tryOnReferen
       : "I would like to begin a bespoke order.",
     product ? `Product page: ${absoluteProductUrl(product.slug)}` : "",
     product ? `Listed price: ${product.price}` : "",
-    tryOnReference ? `AI try-on reference: ${tryOnReference}` : "",
+    referenceNote ? `Reference note: ${referenceNote}` : "",
     "",
-    customNote || "Please help me with sizing, customization, embroidery options, and delivery timing.",
+    customNote || "Please help me with sizing, customization, embroidery options, fabric choices, and delivery timing.",
   ].filter(Boolean);
 
   return `https://wa.me/${number}?text=${encodeURIComponent(lines.join("\n"))}`;

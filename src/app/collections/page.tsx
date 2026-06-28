@@ -14,7 +14,7 @@ export default function CollectionsPage() {
         <section className="atelier-shell relative py-16">
           <SectionHeading
             title="Collections"
-            copy={`Browse the full ${products.length}-piece Magnate Artisan catalog by visual world. Every product keeps real imagery first and AI preview as an optional fitting aid.`}
+            copy={`Browse the full ${products.length}-piece Magnate Artisan catalog by visual world. Every product keeps real imagery first, with inquiry details for customization, sizing, and occasion planning.`}
           />
           <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {collectionList.map((collection) => (
