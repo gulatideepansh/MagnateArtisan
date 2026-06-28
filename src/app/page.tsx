@@ -7,7 +7,8 @@ import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
-import { collectionList, featuredProducts, media, products } from "@/lib/catalog";
+import { collectionList, featuredProducts, measurementGuides, media, products } from "@/lib/catalog";
+import { craftsmanshipMedia, originalSiteMedia, trustMedia } from "@/lib/media-curation";
 
 export default function Home() {
   const heroVideo =
@@ -20,6 +21,7 @@ export default function Home() {
     ) ||
     media.posters.find((poster) => poster.src.includes("d9d1407a9f6f4585b10a845484cbf2c3")) ||
     media.posters[0];
+  const measurementPreview = measurementGuides.slice(0, 4);
 
   return (
     <>
@@ -67,6 +69,22 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="border-y border-[#b99858]/15 bg-black/32 py-8">
+          <div className="atelier-shell grid gap-4 md:grid-cols-4">
+            {trustMedia.map((item) => (
+              <article key={item.title} className="grid grid-cols-[72px_1fr] items-center gap-4">
+                <div className="relative aspect-square overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
+                  <Image src={item.src} alt="" fill sizes="72px" className="object-cover" />
+                </div>
+                <div>
+                  <h2 className="text-sm uppercase tracking-[0.16em] text-[#f6efe3]">{item.title}</h2>
+                  <p className="mt-1 text-xs leading-5 text-[#b7aa99]">{item.copy}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="atelier-shell py-24">
           <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-end">
             <SectionHeading
@@ -85,24 +103,40 @@ export default function Home() {
         </section>
 
         <section className="bg-black/24 py-24">
-          <div className="atelier-shell">
-            <SectionHeading
-              title="Quick inquiry, serious detail."
-              copy="The site is built around a direct custom-order conversation. Pick a piece, send the occasion and measurements, then shape color, fabric, embroidery, and timing with the atelier."
-              align="center"
-            />
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {[
-                { icon: MessageCircle, title: "Send", copy: "Choose a catalog piece or custom idea and send it with your occasion, city, and event date." },
-                { icon: Ruler, title: "Measure", copy: "Use the measurement guide to prepare sizing notes before the consultation begins." },
-                { icon: Palette, title: "Customize", copy: "Discuss color, fabric, embroidery motifs, rhinestone level, lining, and finishing." },
-              ].map((item) => (
-                <div key={item.title} className="luxury-panel p-7">
-                  <item.icon className="text-[#e4c982]" size={30} />
-                  <h3 className="display mt-6 text-4xl text-[#f6efe3]">{item.title}</h3>
-                  <p className="mt-4 leading-7 text-[#b7aa99]">{item.copy}</p>
+          <div className="atelier-shell grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <SectionHeading
+                title="Quick inquiry, serious detail."
+                copy="The site is built around a direct custom-order conversation. Pick a piece, send the occasion and measurements, then shape color, fabric, embroidery, and timing with the atelier."
+              />
+              <div className="mt-9 grid gap-4">
+                {[
+                  { icon: MessageCircle, title: "Send", copy: "Choose a catalog piece or custom idea and send it with your occasion, city, and event date." },
+                  { icon: Ruler, title: "Measure", copy: "Use the measurement guide to prepare sizing notes before the consultation begins." },
+                  { icon: Palette, title: "Customize", copy: "Discuss color, fabric, embroidery motifs, rhinestone level, lining, and finishing." },
+                ].map((item) => (
+                  <article key={item.title} className="grid grid-cols-[48px_1fr] gap-4 border border-[#b99858]/20 p-5">
+                    <item.icon className="mt-1 text-[#e4c982]" size={28} />
+                    <div>
+                      <h3 className="display text-3xl text-[#f6efe3]">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-[#b7aa99]">{item.copy}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="relative aspect-[4/5] overflow-hidden border border-[#b99858]/25 bg-[#17120e] sm:translate-y-8">
+                <Image src={originalSiteMedia.designDesk} alt="Bespoke design desk with sketches and fabric references" fill sizes="40vw" className="object-cover" />
+              </div>
+              <div className="grid gap-4">
+                <div className="relative aspect-[5/4] overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
+                  <Image src={originalSiteMedia.stylingSession} alt="Magnate Artisan fitting and styling reference" fill sizes="32vw" className="object-cover" />
                 </div>
-              ))}
+                <div className="relative aspect-[5/4] overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
+                  <Image src={originalSiteMedia.floralDesign} alt="Floral embroidery design reference" fill sizes="32vw" className="object-cover" />
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -131,17 +165,17 @@ export default function Home() {
               <ButtonLink href="/bespoke" className="mt-8" tone="wine">Start Bespoke Inquiry</ButtonLink>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {featuredProducts(4).map((product) => (
-                <div key={product.slug} className="relative aspect-[4/5] overflow-hidden bg-[#17120e]">
+              {craftsmanshipMedia.map((item) => (
+                <div key={item.src} className="relative aspect-[4/5] overflow-hidden bg-[#17120e]">
                   <Image
-                    src={product.primaryImage}
-                    alt={product.title}
+                    src={item.src}
+                    alt={item.label}
                     fill
                     sizes="30vw"
                     className="object-cover"
                   />
                   <span className="absolute left-3 top-3 bg-black/64 px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-[#e4c982]">
-                    Made to order
+                    {item.label}
                   </span>
                 </div>
               ))}
@@ -149,8 +183,42 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="bg-[#0b0806] py-24">
-          <div className="atelier-shell grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+        <section className="atelier-shell py-24">
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+            <SectionHeading
+              title="Prepare measurements without slowing the inquiry."
+              copy="Clients can send the first brief even if sizing is not ready. These original fitting animations help them collect cleaner notes before the final confirmation."
+            />
+            <ButtonLink href="/bespoke#measurements" tone="ghost" className="justify-self-start lg:justify-self-end">
+              Prepare Measurements
+              <ArrowRight size={17} />
+            </ButtonLink>
+          </div>
+          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {measurementPreview.map((guide) => (
+              <article key={guide.src} className="overflow-hidden border border-[#b99858]/22 bg-[#17120e]">
+                <div className="relative aspect-[4/3]">
+                  <Image src={guide.src} alt={`${guide.label} measurement guide`} fill sizes="25vw" className="object-cover" unoptimized />
+                </div>
+                <div className="p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-[#e4c982]">{guide.audience}</p>
+                  <h3 className="display mt-2 text-3xl text-[#f6efe3]">{guide.label}</h3>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden bg-[#0b0806] py-24">
+          <Image
+            src={originalSiteMedia.atelierRoom}
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover opacity-[0.18]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#070604] via-[#070604]/88 to-[#070604]/58" />
+          <div className="atelier-shell relative grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <SectionHeading
               title="Information that speeds up the consultation."
               copy="A strong first message reduces back-and-forth. Customers can send the piece, deadline, location, sizing status, and customization direction before the first reply."

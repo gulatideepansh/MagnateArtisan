@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { CalendarDays, MessageCircle, Palette, Ruler, Scissors, Timer, Upload } from "lucide-react";
 import { BespokeInquiryForm } from "@/components/bespoke-inquiry-form";
 import { MeasurementGuides } from "@/components/measurement-guides";
@@ -5,6 +6,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
+import { originalSiteMedia } from "@/lib/media-curation";
 
 const steps = [
   { icon: Upload, title: "Share the reference", copy: "Choose a catalog piece, paste a product link, or describe the custom direction you want." },
@@ -52,7 +54,23 @@ export default function BespokePage() {
             ))}
           </div>
 
-          <div className="mt-14">
+          <div className="mt-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="relative min-h-72 overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
+                <Image src={originalSiteMedia.ipadDesign} alt="Bespoke embroidery concept artwork" fill sizes="40vw" className="object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <p className="absolute bottom-5 left-5 right-5 text-xs uppercase tracking-[0.18em] text-[#e4c982]">
+                  Reference artwork and embroidery direction
+                </p>
+              </div>
+              <div className="relative min-h-72 overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
+                <Image src={originalSiteMedia.fittingRoom} alt="Tailoring fitting room reference" fill sizes="40vw" className="object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <p className="absolute bottom-5 left-5 right-5 text-xs uppercase tracking-[0.18em] text-[#e4c982]">
+                  Fit, proportion, and finishing discussion
+                </p>
+              </div>
+            </div>
             <BespokeInquiryForm />
           </div>
 
@@ -70,6 +88,9 @@ export default function BespokePage() {
             <div>
               <Scissors className="text-[#e4c982]" size={34} />
               <h2 className="display mt-6 text-5xl text-[#fff4df] md:text-7xl">Craft begins with the occasion.</h2>
+              <div className="relative mt-8 aspect-[4/3] overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
+                <Image src={originalSiteMedia.cuttingTable} alt="Fabric cutting and atelier table" fill sizes="40vw" className="object-cover" />
+              </div>
             </div>
             <div className="grid gap-5">
               {[

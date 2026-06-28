@@ -1,15 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { collectionCoverMedia } from "@/lib/media-curation";
 import type { Collection } from "@/lib/types";
 
 export function CollectionCard({ collection }: { collection: Collection }) {
+  const coverImage = collectionCoverMedia[collection.slug] || collection.coverImage;
+
   return (
     <Link href={`/collections/${collection.slug}`} className="group block">
       <article className="relative min-h-[360px] overflow-hidden border border-white/10 bg-[#17120e]">
-        {collection.coverImage ? (
+        {coverImage ? (
           <Image
-            src={collection.coverImage}
+            src={coverImage}
             alt={collection.name}
             fill
             sizes="(max-width: 768px) 90vw, 33vw"

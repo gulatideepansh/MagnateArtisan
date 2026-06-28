@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { CalendarDays, MessageCircle, Palette, Ruler, Scissors, Shirt } from "lucide-react";
 import { ButtonLink } from "@/components/button-link";
@@ -6,6 +7,7 @@ import { ProductCard } from "@/components/product-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getProduct, products, relatedProducts } from "@/lib/catalog";
+import { originalSiteMedia } from "@/lib/media-curation";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export function generateStaticParams() {
@@ -129,6 +131,35 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   <item.icon className="text-[#e4c982]" size={22} />
                   <h2 className="display mt-4 text-3xl text-[#f6efe3]">{item.title}</h2>
                   <p className="mt-2 text-sm leading-7 text-[#b7aa99]">{item.copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-black/24 py-20">
+          <div className="atelier-shell grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-[#e4c982]">Customization Reference</p>
+              <h2 className="display mt-4 text-5xl text-[#fff4df] md:text-6xl">Shape the final piece around the occasion.</h2>
+              <p className="mt-5 leading-8 text-[#b7aa99]">
+                Use the product photos as the base, then bring references for embroidery density, fabric feel, color direction, lining, button detail, and how formal or theatrical the final silhouette should be.
+              </p>
+              <ButtonLink href="/bespoke#contact" className="mt-7" tone="wine">
+                Send Custom Notes
+              </ButtonLink>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                { src: originalSiteMedia.ipadDesign, label: "Motif planning" },
+                { src: originalSiteMedia.calico, label: "Fabric behavior" },
+                { src: originalSiteMedia.tailoringCuffs, label: "Detail finish" },
+              ].map((item) => (
+                <article key={item.src} className="overflow-hidden border border-[#b99858]/22 bg-[#17120e]">
+                  <div className="relative aspect-[3/4]">
+                    <Image src={item.src} alt={item.label} fill sizes="25vw" className="object-cover" />
+                  </div>
+                  <p className="p-4 text-xs uppercase tracking-[0.16em] text-[#e4c982]">{item.label}</p>
                 </article>
               ))}
             </div>
