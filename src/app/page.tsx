@@ -9,7 +9,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
 import { collectionList, featuredProducts, measurementGuides, media, products } from "@/lib/catalog";
-import { craftsmanshipMedia, originalSiteMedia, trustMedia } from "@/lib/media-curation";
+import { craftsmanshipMedia, originalSiteMedia, processMedia, trustMedia } from "@/lib/media-curation";
 
 export default function Home() {
   const heroVideo =
@@ -105,42 +105,40 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="bg-black/24 py-24">
-          <div className="atelier-shell grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div>
-              <SectionHeading
-                title="Quick inquiry, serious detail."
-                copy="The site is built around a direct custom-order conversation. Pick a piece, send the occasion and measurements, then shape color, fabric, embroidery, and timing with the atelier."
-              />
-              <div className="mt-9 grid gap-4">
-                {[
-                  { icon: MessageCircle, title: "Send", copy: "Choose a catalog piece or custom idea and send it with your occasion, city, and event date." },
-                  { icon: Ruler, title: "Measure", copy: "Use the measurement guide to prepare sizing notes before the consultation begins." },
-                  { icon: Palette, title: "Customize", copy: "Discuss color, fabric, embroidery motifs, rhinestone level, lining, and finishing." },
-                ].map((item) => (
-                  <article key={item.title} className="grid grid-cols-[48px_1fr] gap-4 border border-[#b99858]/20 p-5">
-                    <item.icon className="mt-1 text-[#e4c982]" size={28} />
-                    <div>
-                      <h3 className="display text-3xl text-[#f6efe3]">{item.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-[#b7aa99]">{item.copy}</p>
+        <section className="relative overflow-hidden bg-black/24 py-24">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#b99858]/30 to-transparent" />
+          <div className="atelier-shell">
+            <div className="mx-auto max-w-2xl text-center">
+              <div className="gold-line mx-auto mb-6 w-32" />
+              <h2 className="display text-balance text-5xl leading-none text-[#fff4df] md:text-6xl">Our Process</h2>
+              <p className="mt-5 text-base leading-8 text-[#b7aa99] md:text-lg">
+                From first brief to finished arrival, each made-to-order piece follows a clear atelier path.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {processMedia.map((step) => (
+                <article key={step.title} className="group relative overflow-hidden border border-[#b99858]/24 bg-[#17120e]">
+                  <div className="relative aspect-square">
+                    <Image
+                      src={step.src}
+                      alt={step.title}
+                      fill
+                      sizes="(max-width: 768px) 92vw, (max-width: 1280px) 45vw, 25vw"
+                      className="object-cover transition duration-700 group-hover:scale-[1.04]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/22 to-black/18" />
+                    <div className="absolute inset-6 flex items-center justify-center text-center">
+                      <h3 className="text-balance text-xl font-semibold uppercase tracking-[0.06em] text-white md:text-2xl">
+                        {step.title}
+                      </h3>
                     </div>
-                  </article>
-                ))}
-              </div>
+                  </div>
+                </article>
+              ))}
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="relative aspect-[4/5] overflow-hidden border border-[#b99858]/25 bg-[#17120e] sm:translate-y-8">
-                <Image src={originalSiteMedia.designDesk} alt="Bespoke design desk with sketches and fabric references" fill sizes="40vw" className="object-cover" />
-              </div>
-              <div className="grid gap-4">
-                <div className="relative aspect-[5/4] overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
-                  <Image src={originalSiteMedia.stylingSession} alt="Magnate Artisan fitting and styling reference" fill sizes="32vw" className="object-cover" />
-                </div>
-                <div className="relative aspect-[5/4] overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
-                  <Image src={originalSiteMedia.floralDesign} alt="Floral embroidery design reference" fill sizes="32vw" className="object-cover" />
-                </div>
-              </div>
-            </div>
+
+            <div className="gold-line mt-12" />
           </div>
         </section>
 

@@ -45,3 +45,26 @@ export const craftsmanshipMedia = [
   { src: originalSiteMedia.cuttingTable, label: "Pattern and fabric work" },
   { src: originalSiteMedia.tailoringCuffs, label: "Detail and ornament" },
 ];
+
+export const processMedia = [
+  {
+    src: originalSiteMedia.schedule,
+    title: "Schedule a Consultation",
+    copy: "Share the occasion, deadline, location, and first direction.",
+  },
+  {
+    src: originalSiteMedia.designDesk,
+    title: "Craft Your Design",
+    copy: "Choose fabric, color, embroidery, lining, and finishing details.",
+  },
+  {
+    src: originalSiteMedia.review,
+    title: "Review & Confirm",
+    copy: "Confirm the proportions, details, and made-to-order brief.",
+  },
+  {
+    src: originalSiteMedia.atelierCase,
+    title: "Handcrafted & Delivered",
+    copy: "The final piece is prepared, finished, packed, and handed over.",
+  },
+];
