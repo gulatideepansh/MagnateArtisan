@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { getProduct } from "@/lib/catalog";
 
 export const runtime = "nodejs";
+
+const garmentTypes = new Set(["upper_body", "lower_body", "dresses"]);
 
 export async function POST(request: Request) {
   try {
@@ -21,25 +20,34 @@ export async function POST(request: Request) {
     const input = await request.formData();
     const personImage = input.get("personImage");
     const productSlug = String(input.get("productSlug") || "");
-    const product = getProduct(productSlug);
+    const garmentImage = String(input.get("garmentImage") || "");
+    const garmentType = String(input.get("garmentType") || "");
 
     if (!(personImage instanceof File)) {
       return NextResponse.json({ error: "Missing uploaded person image." }, { status: 400 });
     }
 
-    if (!product) {
-      return NextResponse.json({ error: "Unknown product selected for try-on." }, { status: 400 });
+    if (!garmentImage.startsWith("/")) {
+      return NextResponse.json({ error: "Missing selected garment image." }, { status: 400 });
     }
 
-    const garmentPath = path.join(process.cwd(), "public", product.aiGarmentImage.replace(/^\//, ""));
-    const garmentBuffer = await readFile(garmentPath);
+    if (!garmentTypes.has(garmentType)) {
+      return NextResponse.json({ error: "Unknown garment type selected for try-on." }, { status: 400 });
+    }
+
+    const garmentResponse = await fetch(new URL(garmentImage, request.url));
+    if (!garmentResponse.ok) {
+      return NextResponse.json({ error: "Could not load selected garment image." }, { status: 400 });
+    }
+
+    const garmentBuffer = await garmentResponse.arrayBuffer();
     const outgoing = new FormData();
     outgoing.append("personImage", personImage);
-    outgoing.append("garmentImage", new Blob([garmentBuffer]), path.basename(product.aiGarmentImage));
-    outgoing.append("garmentType", product.garmentType);
+    outgoing.append("garmentImage", new Blob([garmentBuffer]), garmentImage.split("/").pop() || "garment.jpg");
+    outgoing.append("garmentType", garmentType);
     outgoing.append("stylePreset", String(input.get("stylePreset") || "luxury_editorial"));
     outgoing.append("seed", String(input.get("seed") || "42"));
-    outgoing.append("productSlug", product.slug);
+    outgoing.append("productSlug", productSlug);
 
     const response = await fetch(leffaUrl, {
       method: "POST",
