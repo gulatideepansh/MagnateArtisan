@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Scissors } from "lucide-react";
+import { AchievementCounts } from "@/components/achievement-counts";
 import { ButtonLink } from "@/components/button-link";
 import { CollectionCard } from "@/components/collection-card";
 import { ProductCard } from "@/components/product-card";
@@ -84,6 +85,8 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        <AchievementCounts />
 
         <section className="atelier-shell py-24">
           <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-end">
