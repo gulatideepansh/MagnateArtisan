@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Scissors } from "lucide-react";
+import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Scissors, Star } from "lucide-react";
 import { AchievementCounts } from "@/components/achievement-counts";
 import { ButtonLink } from "@/components/button-link";
 import { ProductCard } from "@/components/product-card";
@@ -9,6 +9,46 @@ import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
 import { featuredProducts, measurementGuides, media } from "@/lib/catalog";
 import { craftsmanshipMedia, originalSiteMedia, processMedia, trustMedia } from "@/lib/media-curation";
+
+const etsyLogo = "/site-media/images/Etsy_logo_lg_rgb_2a6b6a0294.png";
+const etsyReviewHighlights = [
+  {
+    name: "Chelsy",
+    shop: "MagnateArtisan",
+    date: "03 Jun 2026",
+    note: "Praised the guided design process, clear communication, measurement help, and a finished jacket that went beyond expectations.",
+  },
+  {
+    name: "Etsy buyer",
+    shop: "MagnateArtisan",
+    date: "12 Jun 2026",
+    note: "Shared that a custom tuxedo was remade quickly after a sizing issue and arrived in time for the event with a better fit.",
+  },
+  {
+    name: "Tyler",
+    shop: "MagnateArtisanStudio",
+    date: "05 Jun 2026",
+    note: "Highlighted a very specific custom suit brief and said the team worked through every step until it matched the vision.",
+  },
+  {
+    name: "Thompson",
+    shop: "MagnateArtisanStudio",
+    date: "03 Jun 2026",
+    note: "Worked with the studio for months on a Versailles masquerade costume and praised the quality, pricing, and response speed.",
+  },
+  {
+    name: "Morgan",
+    shop: "Both Etsy shops",
+    date: "01 Apr 2026",
+    note: "Called the process a wonderful experience with clear back-and-forth communication, correct sizing, and eye-catching suits.",
+  },
+  {
+    name: "Randall",
+    shop: "MagnateArtisan",
+    date: "03 Jun 2026",
+    note: "Noted an excellent look and perfect fit, recommending the outfit to anyone looking for standout customwear.",
+  },
+];
 
 export default function Home() {
   const heroVideo =
@@ -275,6 +315,85 @@ export default function Home() {
                   <p className="mt-3 text-sm leading-7 text-[#b7aa99]">{item.copy}</p>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden border-t border-[#b99858]/16 bg-[#070604] py-24">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(185,152,88,0.12),transparent_28rem)]" />
+          <div className="atelier-shell relative">
+            <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
+              <div>
+                <div className="mb-7 h-px w-32 bg-[#b99858]" />
+                <div className="mb-7 inline-flex items-center gap-3 border border-[#b99858]/24 bg-[#17120e]/70 px-4 py-3">
+                  <span className="relative block h-7 w-[58px]">
+                    <Image src={etsyLogo} alt="Etsy" fill sizes="58px" className="object-contain" />
+                  </span>
+                  <span className="h-6 w-px bg-[#b99858]/24" />
+                  <span className="text-xs uppercase tracking-[0.2em] text-[#e4c982]">Star Seller proof</span>
+                </div>
+                <h2 className="display text-balance text-5xl leading-none text-[#fff4df] md:text-7xl">
+                  Five-star moments, made public on Etsy.
+                </h2>
+                <p className="mt-6 max-w-xl text-base leading-8 text-[#b7aa99]">
+                  Across the public Magnate Artisan Etsy shops, customers consistently highlight communication, custom fit, craftsmanship, timelines, and statement-making results.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                {[
+                  { value: "4.9", label: "MagnateArtisan rating", detail: "62 public reviews" },
+                  { value: "5.0", label: "MagnateArtisanStudio rating", detail: "48 public reviews" },
+                  { value: "110", label: "Etsy reviews checked", detail: "selected 5-star highlights" },
+                ].map((stat) => (
+                  <article key={stat.label} className="border border-[#b99858]/22 bg-[#17120e]/64 p-5">
+                    <div className="flex gap-1 text-[#e4c982]" aria-label="5 star review">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <Star key={index} size={15} fill="currentColor" strokeWidth={1.5} />
+                      ))}
+                    </div>
+                    <p className="mt-5 font-mono text-4xl text-[#fff4df]">{stat.value}</p>
+                    <h3 className="mt-3 text-xs uppercase tracking-[0.18em] text-[#e4c982]">{stat.label}</h3>
+                    <p className="mt-2 text-sm text-[#8f8271]">{stat.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {etsyReviewHighlights.map((review) => (
+                <article key={`${review.shop}-${review.name}-${review.date}`} className="group border border-[#b99858]/18 bg-[#17120e]/58 p-6 transition hover:border-[#b99858]/42 hover:bg-[#17120e]/82">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex gap-1 text-[#e4c982]" aria-label="5 out of 5 stars">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <Star key={index} size={14} fill="currentColor" strokeWidth={1.4} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] uppercase tracking-[0.18em] text-[#8f8271]">Etsy review</span>
+                  </div>
+                  <p className="mt-5 min-h-28 text-sm leading-7 text-[#d7cbbb]">{review.note}</p>
+                  <div className="mt-6 border-t border-[#b99858]/14 pt-4">
+                    <p className="text-sm font-medium text-[#fff4df]">{review.name}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#b99858]">
+                      {review.shop} / {review.date}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-col gap-3 border border-[#b99858]/18 bg-black/24 p-5 text-sm leading-7 text-[#b7aa99] md:flex-row md:items-center md:justify-between">
+              <p>
+                Review highlights are summarized from public Etsy shop reviews for MagnateArtisan and MagnateArtisanStudio.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a href="https://www.etsy.com/au/shop/MagnateArtisan?ref=shop-header-name&section_id=reviews" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-[0.16em] text-[#e4c982] transition hover:text-[#fff4df]">
+                  MagnateArtisan
+                </a>
+                <a href="https://www.etsy.com/au/shop/MagnateArtisanStudio?ref=shop-header-name&section_id=reviews" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-[0.16em] text-[#e4c982] transition hover:text-[#fff4df]">
+                  MagnateArtisanStudio
+                </a>
+              </div>
             </div>
           </div>
         </section>
