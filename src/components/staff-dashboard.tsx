@@ -28,6 +28,30 @@ type TabKey = "products" | "categories" | "invoices" | "publish";
 const garmentTypes: GarmentType[] = ["upper_body", "lower_body", "dresses"];
 const invoiceStatuses: StaffInvoice["status"][] = ["draft", "sent", "paid", "cancelled"];
 const invoiceLogoPath = "/site-media/images/Magnate_Artisians_Logo_Black_430x_cad215cc-035c-4730-9d6d-aef01ef840af_ff89df955d.png";
+const discountCampaignGroups = [
+  {
+    label: "Atelier Campaigns",
+    campaigns: ["Private Client Offer", "VIP Bespoke Offer", "New Collection Introductory Offer", "Wedding Season Offer"],
+  },
+  {
+    label: "Global Calendar",
+    campaigns: [
+      "New Year Sale",
+      "Valentine's Day Offer",
+      "Easter Sale",
+      "Mother's Day Offer",
+      "Father's Day Offer",
+      "Eid Celebration Offer",
+      "Diwali Celebration Offer",
+      "Holiday Season Offer",
+    ],
+  },
+  {
+    label: "Global Retail Events",
+    campaigns: ["Mid-Year Sale", "End of Season Sale", "Black Friday", "Cyber Monday", "Boxing Day Offer"],
+  },
+] as const;
+const discountCampaignOptions: string[] = discountCampaignGroups.flatMap((group) => group.campaigns);
 
 function slugify(value: string) {
   return value
@@ -835,6 +859,7 @@ function ProductEditor({
 }) {
   const isDiscounted = hasDiscount(product.discountType, product.discountValue);
   const salePrice = discountedPrice(product.price, product.discountType, product.discountValue);
+  const legacyCampaign = product.saleLabel && !discountCampaignOptions.includes(product.saleLabel) ? product.saleLabel : "";
 
   return (
     <section className="luxury-panel p-5">
@@ -886,17 +911,32 @@ function ProductEditor({
         <Field label="Price">
           <input value={product.price} onChange={(event) => updateProduct(product.id, { price: event.target.value })} className="staff-input" />
         </Field>
-        <Field label="Sale Label">
-          <input value={product.saleLabel || ""} onChange={(event) => updateProduct(product.id, { saleLabel: event.target.value })} placeholder="Private Sale, Festive Offer..." className="staff-input" />
+        <Field label="Discount Campaign">
+          <select value={product.saleLabel || ""} onChange={(event) => updateProduct(product.id, { saleLabel: event.target.value })} className="staff-input">
+            <option value="">No campaign</option>
+            {legacyCampaign ? <option value={legacyCampaign}>Legacy: {legacyCampaign}</option> : null}
+            {discountCampaignGroups.map((group) => (
+              <optgroup key={group.label} label={group.label}>
+                {group.campaigns.map((campaign) => (
+                  <option key={campaign} value={campaign}>
+                    {campaign}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <p className="text-xs normal-case leading-5 tracking-normal text-[#8f8271]">
+            Worldwide campaign categories only; avoid region-specific promotions.
+          </p>
         </Field>
-        <Field label="Discount Type">
+        <Field label="Discount Method">
           <select value={product.discountType || "none"} onChange={(event) => updateProduct(product.id, { discountType: event.target.value as Product["discountType"] })} className="staff-input">
             <option value="none">No discount</option>
-            <option value="percent">Percentage</option>
-            <option value="amount">Fixed amount</option>
+            <option value="percent">Percentage off</option>
+            <option value="amount">Fixed amount off</option>
           </select>
         </Field>
-        <Field label="Discount Value">
+        <Field label="Discount Amount / Percent">
           <input type="number" value={product.discountValue || 0} onChange={(event) => updateProduct(product.id, { discountValue: Number(event.target.value) })} className="staff-input" />
         </Field>
         <Field label="Garment Type">
