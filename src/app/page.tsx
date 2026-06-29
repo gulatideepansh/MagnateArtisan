@@ -2,13 +2,12 @@ import Image from "next/image";
 import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Scissors } from "lucide-react";
 import { AchievementCounts } from "@/components/achievement-counts";
 import { ButtonLink } from "@/components/button-link";
-import { CollectionCard } from "@/components/collection-card";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
-import { collectionList, featuredProducts, measurementGuides, media, products } from "@/lib/catalog";
+import { featuredProducts, measurementGuides, media } from "@/lib/catalog";
 import { craftsmanshipMedia, originalSiteMedia, processMedia, trustMedia } from "@/lib/media-curation";
 
 export default function Home() {
@@ -23,6 +22,14 @@ export default function Home() {
     media.posters.find((poster) => poster.src.includes("d9d1407a9f6f4585b10a845484cbf2c3")) ||
     media.posters[0];
   const measurementPreview = measurementGuides.slice(0, 4);
+  const bespokeVideo =
+    media.videos.find((video) => video.src.includes("31120f6ec04149dba517e4adaa14c613")) || media.videos[0];
+  const bespokePoster =
+    media.posters.find(
+      (poster) => poster.src.includes("31120f6ec04149dba517e4adaa14c613") && poster.src.includes("1800x"),
+    ) ||
+    media.posters.find((poster) => poster.src.includes("31120f6ec04149dba517e4adaa14c613")) ||
+    media.posters[0];
 
   return (
     <>
@@ -88,20 +95,51 @@ export default function Home() {
 
         <AchievementCounts />
 
-        <section className="atelier-shell py-24">
-          <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-end">
-            <SectionHeading
-              title="Curated for entrance."
-              copy="Each category is treated as a visual world: royal costume, charro ceremony, western wedding, matador drama, and bespoke couture."
-            />
-            <p className="text-right text-sm uppercase tracking-[0.18em] text-[#b7aa99] md:block">
-              {products.length} pieces in the catalog
-            </p>
-          </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {collectionList.map((collection) => (
-              <CollectionCard key={collection.slug} collection={collection} />
-            ))}
+        <section className="relative overflow-hidden bg-[#0b0806] py-24">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#b99858]/35 to-transparent" />
+          <div className="atelier-shell grid gap-12 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
+            <div className="max-w-xl">
+              <div className="mb-7 h-px w-32 bg-[#b99858]" />
+              <p className="mb-4 text-xs uppercase tracking-[0.28em] text-[#b99858]">Bespoke Atelier</p>
+              <h2 className="display text-balance text-5xl leading-none text-[#fff4df] md:text-6xl">
+                Handcrafted bespoke suits for every occasion.
+              </h2>
+              <p className="mt-7 text-base leading-8 text-[#d7cbbb]">
+                At Magnate Artisan, every suit begins with your idea. Whether it is for a wedding, business event, formal occasion, celebration, or a completely unique concept, our master tailors transform your inspiration into a perfectly crafted bespoke garment.
+              </p>
+              <p className="mt-4 text-base leading-8 text-[#b7aa99]">
+                From fabric selection and design consultation to precise measurements, pattern creation, fittings, and final delivery, we manage every detail of the journey. The result is a one-of-a-kind suit tailored to your style, personality, and occasion, crafted with exceptional precision and timeless elegance.
+              </p>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <ButtonLink href="/bespoke#contact" tone="gold">
+                  <MessageCircle size={17} />
+                  Chat on WhatsApp
+                </ButtonLink>
+                <ButtonLink href="/bespoke#contact" tone="ghost">
+                  Book a Meeting
+                  <ArrowRight size={17} />
+                </ButtonLink>
+              </div>
+            </div>
+
+            <div className="relative aspect-[4/3] overflow-hidden border border-[#b99858]/22 bg-[#17120e] shadow-[0_24px_80px_rgba(0,0,0,0.34)] lg:aspect-[16/10]">
+              {bespokeVideo ? (
+                <video
+                  className="h-full w-full object-cover"
+                  src={bespokeVideo.src}
+                  poster={bespokePoster?.src}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  disablePictureInPicture
+                />
+              ) : bespokePoster ? (
+                <Image src={bespokePoster.src} alt="" fill sizes="(max-width: 1024px) 92vw, 54vw" className="object-cover" />
+              ) : null}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/36 via-transparent to-black/12" />
+            </div>
           </div>
         </section>
 
