@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getProduct, products, relatedProducts } from "@/lib/catalog";
 import { originalSiteMedia } from "@/lib/media-curation";
+import { discountedPrice, formatMoney, hasDiscount } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export function generateStaticParams() {
@@ -47,6 +48,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   const related = relatedProducts(product);
   const tags = occasionTags(product.title, product.collectionName);
+  const isDiscounted = hasDiscount(product.discountType, product.discountValue);
+  const salePrice = discountedPrice(product.price, product.discountType, product.discountValue);
   const inquiryUrl = whatsappUrl(
     product,
     `Please help me customize this ${includedPieces(product.title).toLowerCase()}. I can share measurements, event date, delivery location, color direction, and reference images.`,
@@ -62,11 +65,27 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="lg:sticky lg:top-28 lg:self-start">
             <p className="text-xs uppercase tracking-[0.22em] text-[#e4c982]">{product.collectionName}</p>
             <h1 className="display mt-4 text-5xl leading-none text-[#fff4df] md:text-7xl">{product.title}</h1>
-            <p className="mt-6 text-lg text-[#d7cbbb]">Starting from {product.price}</p>
+            <div className="mt-6 flex flex-wrap items-center gap-3 text-lg text-[#d7cbbb]">
+              <span>Starting from</span>
+              {isDiscounted ? (
+                <>
+                  <span className="text-2xl text-[#e4c982]">{formatMoney(salePrice)}</span>
+                  <span className="line-through opacity-65">{formatMoney(product.price)}</span>
+                </>
+              ) : (
+                <span>{formatMoney(product.price)}</span>
+              )}
+              {product.saleLabel || isDiscounted ? (
+                <span className="bg-[#5b1625] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#fff4df]">
+                  {product.saleLabel || "Private Sale"}
+                </span>
+              ) : null}
+            </div>
 
             <div className="gold-line my-8 w-full" />
 
             <div className="grid gap-4 text-sm leading-7 text-[#b7aa99]">
+              {product.description ? <p>{product.description}</p> : null}
               <p>
                 This page keeps the real catalog photography as the source of truth. Use it as a starting point for a made-to-order commission, color change, embroidery adjustment, or full custom brief.
               </p>

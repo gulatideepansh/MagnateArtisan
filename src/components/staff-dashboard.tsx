@@ -1,0 +1,965 @@
+"use client";
+
+import Image from "next/image";
+import {
+  Boxes,
+  FileText,
+  ImagePlus,
+  Loader2,
+  LogOut,
+  PackagePlus,
+  Save,
+  Search,
+  Settings2,
+  Star,
+  Trash2,
+  UploadCloud,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import type { Collection, GarmentType, Product } from "@/lib/types";
+import type { InvoiceLineItem, StaffCmsState, StaffInvoice } from "@/lib/staff-types";
+import { cn, discountedPrice, formatMoney, hasDiscount } from "@/lib/utils";
+
+type TabKey = "products" | "categories" | "invoices" | "publish";
+
+const garmentTypes: GarmentType[] = ["upper_body", "lower_body", "dresses"];
+const invoiceStatuses: StaffInvoice["status"][] = ["draft", "sent", "paid", "cancelled"];
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 96);
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function newInvoiceNumber(count: number) {
+  return `MA-${String(count + 1).padStart(4, "0")}`;
+}
+
+function lineTotal(item: InvoiceLineItem) {
+  return Math.max(0, item.quantity * item.unitPrice - item.discount);
+}
+
+function invoiceTotal(invoice: StaffInvoice) {
+  return invoice.lineItems.reduce((total, item) => total + lineTotal(item), 0);
+}
+
+function createBlankInvoice(count: number): StaffInvoice {
+  const timestamp = nowIso();
+  return {
+    id: crypto.randomUUID(),
+    number: newInvoiceNumber(count),
+    clientName: "New Client",
+    clientEmail: "",
+    clientPhone: "",
+    eventDate: "",
+    status: "draft",
+    notes: "",
+    lineItems: [
+      {
+        id: crypto.randomUUID(),
+        description: "Bespoke garment commission",
+        quantity: 1,
+        unitPrice: 0,
+        discount: 0,
+      },
+    ],
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
+function createBlankProduct(collection: Collection): Product {
+  const id = crypto.randomUUID();
+  const slug = `new-product-${id.slice(0, 8)}`;
+  return {
+    id,
+    slug,
+    title: "New Bespoke Piece",
+    price: "0.00",
+    description: "",
+    collection: collection.slug,
+    collectionName: collection.name,
+    images: [],
+    primaryImage: "",
+    aiGarmentImage: "",
+    tryOnOutputs: [],
+    sourceFolder: "staff-created",
+    garmentType: "upper_body",
+    modelGender: "male",
+    imageCount: 0,
+    whatsappNote: "I am interested in this bespoke piece. I would like to discuss sizing, fabric, embroidery, and delivery timing.",
+    status: "draft",
+    saleLabel: "",
+    discountType: "none",
+    discountValue: 0,
+    tags: [],
+    updatedAt: nowIso(),
+  };
+}
+
+function statLabel(value: number, label: string) {
+  return `${new Intl.NumberFormat("en-US").format(value)} ${label}`;
+}
+
+export function StaffDashboard() {
+  const [state, setState] = useState<StaffCmsState | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>("products");
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState("");
+  const [query, setQuery] = useState("");
+  const [collectionFilter, setCollectionFilter] = useState("all");
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/staff/cms")
+      .then((response) => {
+        if (!response.ok) throw new Error("Staff session expired.");
+        return response.json();
+      })
+      .then((data: StaffCmsState) => {
+        setState(data);
+        setSelectedProductId(data.products[0]?.id || "");
+        setSelectedInvoiceId(data.invoices[0]?.id || "");
+      })
+      .catch((error: Error) => setMessage(error.message))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const selectedProduct = state?.products.find((product) => product.id === selectedProductId);
+  const selectedInvoice = state?.invoices.find((invoice) => invoice.id === selectedInvoiceId);
+  const visibleProducts = state?.products.filter((product) => product.status !== "hidden") || [];
+  const filteredProducts = useMemo(() => {
+    if (!state) return [];
+    const needle = query.trim().toLowerCase();
+    return state.products.filter((product) => {
+      const matchesQuery = !needle || `${product.title} ${product.collectionName} ${product.price}`.toLowerCase().includes(needle);
+      const matchesCollection = collectionFilter === "all" || product.collection === collectionFilter;
+      return matchesQuery && matchesCollection;
+    });
+  }, [collectionFilter, query, state]);
+
+  function updateState(nextState: StaffCmsState) {
+    setState({
+      ...nextState,
+      updatedAt: nowIso(),
+    });
+  }
+
+  function updateProduct(productId: string, patch: Partial<Product>) {
+    if (!state) return;
+    const products = state.products.map((product) => {
+      if (product.id !== productId) return product;
+      const next = { ...product, ...patch, updatedAt: nowIso() };
+      const collection = state.collections.find((item) => item.slug === next.collection);
+      if (collection) next.collectionName = collection.name;
+      next.images = Array.from(new Set(next.images || []));
+      next.primaryImage = next.primaryImage || next.images[0] || "";
+      next.aiGarmentImage = next.aiGarmentImage || next.primaryImage;
+      next.imageCount = next.images.length;
+      return next;
+    });
+    updateState({ ...state, products });
+  }
+
+  function addProduct() {
+    if (!state) return;
+    const collection = state.collections[0];
+    if (!collection) return;
+    const product = createBlankProduct(collection);
+    updateState({ ...state, products: [product, ...state.products] });
+    setSelectedProductId(product.id);
+  }
+
+  function duplicateProduct() {
+    if (!state || !selectedProduct) return;
+    const copy: Product = {
+      ...selectedProduct,
+      id: crypto.randomUUID(),
+      slug: `${selectedProduct.slug}-copy-${Date.now().toString().slice(-4)}`,
+      title: `${selectedProduct.title} Copy`,
+      status: "draft",
+      updatedAt: nowIso(),
+    };
+    updateState({ ...state, products: [copy, ...state.products] });
+    setSelectedProductId(copy.id);
+  }
+
+  function deleteProduct() {
+    if (!state || !selectedProduct) return;
+    const products = state.products.filter((product) => product.id !== selectedProduct.id);
+    updateState({ ...state, products });
+    setSelectedProductId(products[0]?.id || "");
+  }
+
+  function updateCollection(slug: string, patch: Partial<Collection>) {
+    if (!state) return;
+    const collections = state.collections.map((collection) => (collection.slug === slug ? { ...collection, ...patch } : collection));
+    const products = state.products.map((product) => {
+      const collection = collections.find((item) => item.slug === product.collection);
+      return collection ? { ...product, collectionName: collection.name } : product;
+    });
+    updateState({ ...state, collections, products });
+  }
+
+  function addCollection() {
+    if (!state) return;
+    const slug = `new-collection-${state.collections.length + 1}`;
+    updateState({
+      ...state,
+      collections: [
+        ...state.collections,
+        {
+          slug,
+          name: "New Collection",
+          summary: "Describe the collection direction.",
+          count: 0,
+          coverImage: "",
+          visible: true,
+          sortOrder: state.collections.length + 1,
+        },
+      ],
+    });
+  }
+
+  function deleteCollection(slug: string) {
+    if (!state) return;
+    const fallback = state.collections.find((collection) => collection.slug !== slug);
+    if (!fallback) return;
+    const collections = state.collections.filter((collection) => collection.slug !== slug);
+    const products = state.products.map((product) =>
+      product.collection === slug ? { ...product, collection: fallback.slug, collectionName: fallback.name } : product,
+    );
+    updateState({ ...state, collections, products });
+  }
+
+  async function uploadImages(files: FileList | null) {
+    if (!selectedProduct || !files?.length) return;
+    setIsUploading(true);
+    const form = new FormData();
+    Array.from(files).forEach((file) => form.append("files", file));
+    const response = await fetch("/api/staff/upload", { method: "POST", body: form });
+    const data = (await response.json()) as { uploaded?: string[]; error?: string };
+    setIsUploading(false);
+
+    if (!response.ok || !data.uploaded?.length) {
+      setMessage(data.error || "Upload failed.");
+      return;
+    }
+
+    const images = [...selectedProduct.images, ...data.uploaded];
+    updateProduct(selectedProduct.id, {
+      images,
+      primaryImage: selectedProduct.primaryImage || data.uploaded[0],
+    });
+    setMessage(`${data.uploaded.length} image${data.uploaded.length === 1 ? "" : "s"} uploaded.`);
+  }
+
+  function removeImage(image: string) {
+    if (!selectedProduct) return;
+    const images = selectedProduct.images.filter((item) => item !== image);
+    updateProduct(selectedProduct.id, {
+      images,
+      primaryImage: selectedProduct.primaryImage === image ? images[0] || "" : selectedProduct.primaryImage,
+    });
+  }
+
+  function updateInvoice(invoiceId: string, patch: Partial<StaffInvoice>) {
+    if (!state) return;
+    const invoices = state.invoices.map((invoice) =>
+      invoice.id === invoiceId ? { ...invoice, ...patch, updatedAt: nowIso() } : invoice,
+    );
+    updateState({ ...state, invoices });
+  }
+
+  function addInvoice() {
+    if (!state) return;
+    const invoice = createBlankInvoice(state.invoices.length);
+    updateState({ ...state, invoices: [invoice, ...state.invoices] });
+    setSelectedInvoiceId(invoice.id);
+  }
+
+  function deleteInvoice(invoiceId: string) {
+    if (!state) return;
+    const invoices = state.invoices.filter((invoice) => invoice.id !== invoiceId);
+    updateState({ ...state, invoices });
+    setSelectedInvoiceId(invoices[0]?.id || "");
+  }
+
+  function updateLineItem(lineId: string, patch: Partial<InvoiceLineItem>) {
+    if (!selectedInvoice) return;
+    updateInvoice(selectedInvoice.id, {
+      lineItems: selectedInvoice.lineItems.map((item) => (item.id === lineId ? { ...item, ...patch } : item)),
+    });
+  }
+
+  function addLineItemFromProduct(product: Product) {
+    if (!selectedInvoice) return;
+    updateInvoice(selectedInvoice.id, {
+      lineItems: [
+        ...selectedInvoice.lineItems,
+        {
+          id: crypto.randomUUID(),
+          productId: product.id,
+          description: product.title,
+          quantity: 1,
+          unitPrice: discountedPrice(product.price, product.discountType, product.discountValue),
+          discount: 0,
+        },
+      ],
+    });
+  }
+
+  function removeLineItem(lineId: string) {
+    if (!selectedInvoice) return;
+    updateInvoice(selectedInvoice.id, {
+      lineItems: selectedInvoice.lineItems.filter((item) => item.id !== lineId),
+    });
+  }
+
+  async function saveState(endpoint = "/api/staff/cms", method = "PUT") {
+    if (!state) return;
+    setIsSaving(true);
+    setMessage("");
+    const response = await fetch(endpoint, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: method === "PUT" ? JSON.stringify(state) : undefined,
+    });
+    const data = (await response.json()) as StaffCmsState | { error?: string };
+    setIsSaving(false);
+    if (!response.ok) {
+      setMessage("error" in data ? data.error || "Save failed." : "Save failed.");
+      return;
+    }
+    setState(data as StaffCmsState);
+    setMessage(endpoint.includes("publish") ? "Published into source catalog JSON for the local storefront." : "Saved local CMS changes.");
+  }
+
+  async function logout() {
+    await fetch("/api/staff/logout", { method: "POST" });
+    window.location.href = "/staff/login";
+  }
+
+  async function resetLocalState() {
+    setIsSaving(true);
+    const response = await fetch("/api/staff/reset", { method: "POST" });
+    const data = (await response.json()) as StaffCmsState;
+    setIsSaving(false);
+    setState(data);
+    setSelectedProductId(data.products[0]?.id || "");
+    setMessage("Local CMS reset from source catalog.");
+  }
+
+  if (isLoading) {
+    return (
+      <main className="grid min-h-screen place-items-center text-[#fff4df]">
+        <div className="inline-flex items-center gap-3 text-sm uppercase tracking-[0.18em]">
+          <Loader2 className="animate-spin text-[#e4c982]" size={18} />
+          Loading staff atelier
+        </div>
+      </main>
+    );
+  }
+
+  if (!state) {
+    return (
+      <main className="grid min-h-screen place-items-center px-4 text-center text-[#fff4df]">
+        <div>
+          <h1 className="display text-5xl">Staff dashboard unavailable.</h1>
+          <p className="mt-3 text-[#b7aa99]">{message || "Please log in again."}</p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#070604] text-[#fff4df]">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-[#b99858]/16 bg-[#090705]/96 p-5 lg:block">
+        <div>
+          <p className="display text-3xl">Magnate Artisan</p>
+          <p className="mt-1 text-[10px] uppercase tracking-[0.36em] text-[#b99858]">Staff Atelier</p>
+        </div>
+        <nav className="mt-10 grid gap-2">
+          {[
+            { key: "products" as TabKey, label: "Products", icon: Boxes },
+            { key: "categories" as TabKey, label: "Categories", icon: Settings2 },
+            { key: "invoices" as TabKey, label: "Invoices", icon: FileText },
+            { key: "publish" as TabKey, label: "Publish", icon: UploadCloud },
+          ].map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setActiveTab(item.key)}
+              className={cn(
+                "flex min-h-12 items-center gap-3 border px-4 text-left text-sm uppercase tracking-[0.14em] transition",
+                activeTab === item.key
+                  ? "border-[#b99858]/55 bg-[#b99858]/12 text-[#e4c982]"
+                  : "border-transparent text-[#b7aa99] hover:border-[#b99858]/25 hover:text-[#fff4df]",
+              )}
+            >
+              <item.icon size={18} />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <button
+          type="button"
+          onClick={logout}
+          className="absolute bottom-5 left-5 right-5 flex min-h-12 items-center justify-center gap-2 border border-[#b99858]/25 text-sm uppercase tracking-[0.16em] text-[#d7cbbb] transition hover:border-[#e4c982] hover:text-[#fff4df]"
+        >
+          <LogOut size={17} />
+          Logout
+        </button>
+      </aside>
+
+      <section className="lg:pl-72">
+        <header className="sticky top-0 z-20 border-b border-[#b99858]/16 bg-[#070604]/88 px-4 py-4 backdrop-blur md:px-8">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-[#e4c982]">Local CMS Prototype</p>
+              <h1 className="display mt-1 text-4xl text-[#fff4df] md:text-5xl">Staff control room</h1>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => saveState()}
+                disabled={isSaving}
+                className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#b99858] px-4 text-sm font-semibold uppercase tracking-[0.14em] text-[#080604] transition hover:bg-[#e4c982] disabled:opacity-60"
+              >
+                {isSaving ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
+                Save Local
+              </button>
+              <button
+                type="button"
+                onClick={() => saveState("/api/staff/publish", "POST")}
+                disabled={isSaving}
+                className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#5b1625] px-4 text-sm font-semibold uppercase tracking-[0.14em] text-[#fff4df] transition hover:bg-[#731e31] disabled:opacity-60"
+              >
+                <UploadCloud size={17} />
+                Publish JSON
+              </button>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              statLabel(state.products.length, "products"),
+              statLabel(visibleProducts.length, "visible"),
+              statLabel(state.collections.length, "categories"),
+              statLabel(state.invoices.length, "invoices"),
+            ].map((stat) => (
+              <div key={stat} className="border border-[#b99858]/16 bg-white/[0.025] px-4 py-3 text-sm uppercase tracking-[0.14em] text-[#d7cbbb]">
+                {stat}
+              </div>
+            ))}
+          </div>
+          {message ? <p className="mt-4 border border-[#b99858]/22 bg-[#17120e] px-4 py-3 text-sm text-[#d7cbbb]">{message}</p> : null}
+        </header>
+
+        <div className="grid gap-4 border-b border-[#b99858]/16 px-4 py-4 md:px-8 lg:hidden">
+          <div className="grid grid-cols-2 gap-2">
+            {(["products", "categories", "invoices", "publish"] as TabKey[]).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "min-h-11 border px-3 text-xs uppercase tracking-[0.14em]",
+                  activeTab === tab ? "border-[#e4c982] text-[#e4c982]" : "border-[#b99858]/18 text-[#b7aa99]",
+                )}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-4 md:p-8">
+          {activeTab === "products" ? (
+            <div className="grid gap-6 xl:grid-cols-[0.95fr_1.35fr]">
+              <section className="luxury-panel p-5">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <label className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8f8271]" size={17} />
+                    <input
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search products"
+                      className="min-h-12 w-full border border-[#b99858]/20 bg-black/35 pl-10 pr-3 text-sm text-[#fff4df] outline-none focus:border-[#e4c982]"
+                    />
+                  </label>
+                  <select
+                    value={collectionFilter}
+                    onChange={(event) => setCollectionFilter(event.target.value)}
+                    className="min-h-12 border border-[#b99858]/20 bg-black/35 px-3 text-sm text-[#fff4df] outline-none focus:border-[#e4c982]"
+                  >
+                    <option value="all">All categories</option>
+                    {state.collections.map((collection) => (
+                      <option key={collection.slug} value={collection.slug}>
+                        {collection.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <button type="button" onClick={addProduct} className="inline-flex min-h-10 items-center gap-2 bg-[#b99858] px-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#080604]">
+                    <PackagePlus size={16} /> Add
+                  </button>
+                  <button type="button" onClick={duplicateProduct} className="min-h-10 border border-[#b99858]/25 px-3 text-xs uppercase tracking-[0.14em] text-[#d7cbbb]">
+                    Duplicate
+                  </button>
+                  <button type="button" onClick={deleteProduct} className="inline-flex min-h-10 items-center gap-2 border border-[#7b1d31]/50 px-3 text-xs uppercase tracking-[0.14em] text-[#ffc0ca]">
+                    <Trash2 size={15} /> Delete
+                  </button>
+                </div>
+                <div className="mt-5 max-h-[720px] overflow-y-auto pr-1">
+                  {filteredProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => setSelectedProductId(product.id)}
+                      className={cn(
+                        "grid w-full grid-cols-[64px_1fr] gap-3 border-b border-[#b99858]/12 py-3 text-left transition hover:bg-white/[0.03]",
+                        selectedProductId === product.id && "bg-[#b99858]/10",
+                      )}
+                    >
+                      <div className="relative aspect-square overflow-hidden bg-[#17120e]">
+                        {product.primaryImage ? <Image src={product.primaryImage} alt="" fill sizes="64px" className="object-cover" unoptimized /> : null}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-[#fff4df]">{product.title}</p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[#e4c982]">{product.collectionName}</p>
+                        <p className="mt-1 text-xs text-[#8f8271]">
+                          {formatMoney(product.price)} · {product.status || "published"} · {product.imageCount} images
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              {selectedProduct ? (
+                <ProductEditor
+                  product={selectedProduct}
+                  collections={state.collections}
+                  updateProduct={updateProduct}
+                  uploadImages={uploadImages}
+                  removeImage={removeImage}
+                  isUploading={isUploading}
+                />
+              ) : null}
+            </div>
+          ) : null}
+
+          {activeTab === "categories" ? (
+            <CategoriesEditor state={state} updateCollection={updateCollection} addCollection={addCollection} deleteCollection={deleteCollection} />
+          ) : null}
+
+          {activeTab === "invoices" ? (
+            <InvoicesEditor
+              invoices={state.invoices}
+              products={state.products}
+              selectedInvoice={selectedInvoice}
+              setSelectedInvoiceId={setSelectedInvoiceId}
+              addInvoice={addInvoice}
+              deleteInvoice={deleteInvoice}
+              updateInvoice={updateInvoice}
+              addLineItemFromProduct={addLineItemFromProduct}
+              updateLineItem={updateLineItem}
+              removeLineItem={removeLineItem}
+            />
+          ) : null}
+
+          {activeTab === "publish" ? (
+            <section className="grid gap-6 xl:grid-cols-2">
+              <div className="luxury-panel p-6">
+                <UploadCloud className="text-[#e4c982]" size={30} />
+                <h2 className="display mt-5 text-5xl text-[#fff4df]">Publish local edits.</h2>
+                <p className="mt-4 leading-8 text-[#b7aa99]">
+                  Save keeps edits in the local prototype CMS. Publish writes those edits back into `src/data/catalog.json` and `src/data/collections.json` so the current storefront can use them during local demos and commits.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => saveState()}
+                    disabled={isSaving}
+                    className="inline-flex min-h-12 items-center gap-2 bg-[#b99858] px-5 text-sm font-semibold uppercase tracking-[0.16em] text-[#080604]"
+                  >
+                    <Save size={17} /> Save Local CMS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => saveState("/api/staff/publish", "POST")}
+                    disabled={isSaving}
+                    className="inline-flex min-h-12 items-center gap-2 bg-[#5b1625] px-5 text-sm font-semibold uppercase tracking-[0.16em] text-[#fff4df]"
+                  >
+                    <UploadCloud size={17} /> Publish Storefront JSON
+                  </button>
+                </div>
+              </div>
+              <div className="border border-[#b99858]/22 bg-[#17120e]/50 p-6">
+                <h3 className="display text-4xl text-[#fff4df]">Prototype notes</h3>
+                <div className="mt-5 grid gap-4 text-sm leading-7 text-[#b7aa99]">
+                  <p>This free version is local file-backed. It is excellent for presentation, screenshots, and workflow demos.</p>
+                  <p>On Vercel production, filesystem writes are not permanent. For real staff usage, move the same data shape to Supabase Auth, Postgres, and Storage.</p>
+                  <p>Uploaded images are saved to `public/staff-uploads` locally. Keep or commit only the uploads you actually want in the prototype.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetLocalState}
+                  disabled={isSaving}
+                  className="mt-7 border border-[#7b1d31]/50 px-5 py-3 text-sm uppercase tracking-[0.16em] text-[#ffc0ca]"
+                >
+                  Reset local CMS from source catalog
+                </button>
+              </div>
+            </section>
+          ) : null}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function ProductEditor({
+  product,
+  collections,
+  updateProduct,
+  uploadImages,
+  removeImage,
+  isUploading,
+}: {
+  product: Product;
+  collections: Collection[];
+  updateProduct: (productId: string, patch: Partial<Product>) => void;
+  uploadImages: (files: FileList | null) => void;
+  removeImage: (image: string) => void;
+  isUploading: boolean;
+}) {
+  const isDiscounted = hasDiscount(product.discountType, product.discountValue);
+  const salePrice = discountedPrice(product.price, product.discountType, product.discountValue);
+
+  return (
+    <section className="luxury-panel p-5">
+      <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-[#e4c982]">Product Editor</p>
+          <h2 className="display mt-2 text-4xl leading-none text-[#fff4df]">{product.title}</h2>
+        </div>
+        <div className="border border-[#b99858]/20 px-4 py-3 text-sm text-[#d7cbbb]">
+          {isDiscounted ? (
+            <>
+              <span className="text-[#e4c982]">{formatMoney(salePrice)}</span>{" "}
+              <span className="line-through opacity-60">{formatMoney(product.price)}</span>
+            </>
+          ) : (
+            <>Starting {formatMoney(product.price)}</>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <Field label="Title">
+          <input value={product.title} onChange={(event) => updateProduct(product.id, { title: event.target.value })} className="staff-input" />
+        </Field>
+        <Field label="Slug">
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <input value={product.slug} onChange={(event) => updateProduct(product.id, { slug: event.target.value })} className="staff-input" />
+            <button type="button" onClick={() => updateProduct(product.id, { slug: slugify(product.title) })} className="border border-[#b99858]/25 px-3 text-xs uppercase tracking-[0.12em] text-[#d7cbbb]">
+              Generate
+            </button>
+          </div>
+        </Field>
+        <Field label="Category">
+          <select value={product.collection} onChange={(event) => updateProduct(product.id, { collection: event.target.value })} className="staff-input">
+            {collections.map((collection) => (
+              <option key={collection.slug} value={collection.slug}>
+                {collection.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Status">
+          <select value={product.status || "published"} onChange={(event) => updateProduct(product.id, { status: event.target.value as Product["status"] })} className="staff-input">
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </Field>
+        <Field label="Price">
+          <input value={product.price} onChange={(event) => updateProduct(product.id, { price: event.target.value })} className="staff-input" />
+        </Field>
+        <Field label="Sale Label">
+          <input value={product.saleLabel || ""} onChange={(event) => updateProduct(product.id, { saleLabel: event.target.value })} placeholder="Private Sale, Festive Offer..." className="staff-input" />
+        </Field>
+        <Field label="Discount Type">
+          <select value={product.discountType || "none"} onChange={(event) => updateProduct(product.id, { discountType: event.target.value as Product["discountType"] })} className="staff-input">
+            <option value="none">No discount</option>
+            <option value="percent">Percentage</option>
+            <option value="amount">Fixed amount</option>
+          </select>
+        </Field>
+        <Field label="Discount Value">
+          <input type="number" value={product.discountValue || 0} onChange={(event) => updateProduct(product.id, { discountValue: Number(event.target.value) })} className="staff-input" />
+        </Field>
+        <Field label="Garment Type">
+          <select value={product.garmentType} onChange={(event) => updateProduct(product.id, { garmentType: event.target.value as GarmentType })} className="staff-input">
+            {garmentTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Model Gender">
+          <select value={product.modelGender} onChange={(event) => updateProduct(product.id, { modelGender: event.target.value as Product["modelGender"] })} className="staff-input">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </Field>
+      </div>
+
+      <Field label="Description" className="mt-4">
+        <textarea value={product.description || ""} onChange={(event) => updateProduct(product.id, { description: event.target.value })} className="staff-input min-h-28 py-3" />
+      </Field>
+      <Field label="WhatsApp Note" className="mt-4">
+        <textarea value={product.whatsappNote} onChange={(event) => updateProduct(product.id, { whatsappNote: event.target.value })} className="staff-input min-h-24 py-3" />
+      </Field>
+
+      <div className="mt-7 border border-[#b99858]/16 p-4">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#e4c982]">Images & Cover</p>
+            <p className="mt-2 text-sm text-[#b7aa99]">Upload, delete, and set product cover photos.</p>
+          </div>
+          <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 bg-[#b99858] px-4 text-sm font-semibold uppercase tracking-[0.14em] text-[#080604]">
+            {isUploading ? <Loader2 className="animate-spin" size={17} /> : <ImagePlus size={17} />}
+            Add Images
+            <input type="file" multiple accept="image/*" onChange={(event) => uploadImages(event.target.files)} className="hidden" />
+          </label>
+        </div>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {product.images.map((image) => (
+            <article key={image} className="border border-[#b99858]/18 bg-black/25 p-3">
+              <div className="relative aspect-[4/3] overflow-hidden bg-[#17120e]">
+                <Image src={image} alt="" fill sizes="240px" className="object-cover" unoptimized />
+                {product.primaryImage === image ? (
+                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 bg-[#b99858] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#080604]">
+                    <Star size={12} /> Cover
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => updateProduct(product.id, { primaryImage: image })} className="min-h-9 border border-[#b99858]/25 text-xs uppercase tracking-[0.12em] text-[#d7cbbb]">
+                  Set Cover
+                </button>
+                <button type="button" onClick={() => removeImage(image)} className="min-h-9 border border-[#7b1d31]/50 text-xs uppercase tracking-[0.12em] text-[#ffc0ca]">
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))}
+          {!product.images.length ? <p className="border border-dashed border-[#b99858]/22 p-6 text-sm text-[#8f8271]">No images yet. Upload product photography to make this product presentable.</p> : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Field({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+  return (
+    <label className={cn("grid gap-2 text-xs uppercase tracking-[0.17em] text-[#e4c982]", className)}>
+      {label}
+      {children}
+    </label>
+  );
+}
+
+function CategoriesEditor({
+  state,
+  updateCollection,
+  addCollection,
+  deleteCollection,
+}: {
+  state: StaffCmsState;
+  updateCollection: (slug: string, patch: Partial<Collection>) => void;
+  addCollection: () => void;
+  deleteCollection: (slug: string) => void;
+}) {
+  return (
+    <section className="luxury-panel p-5">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-[#e4c982]">Categories</p>
+          <h2 className="display mt-2 text-5xl text-[#fff4df]">Collection control</h2>
+        </div>
+        <button type="button" onClick={addCollection} className="bg-[#b99858] px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#080604]">
+          Add Category
+        </button>
+      </div>
+      <div className="mt-6 grid gap-4">
+        {state.collections.map((collection) => (
+          <article key={collection.slug} className="grid gap-4 border border-[#b99858]/16 p-4 xl:grid-cols-[0.85fr_1fr_0.8fr_auto] xl:items-start">
+            <Field label="Name">
+              <input value={collection.name} onChange={(event) => updateCollection(collection.slug, { name: event.target.value })} className="staff-input" />
+            </Field>
+            <Field label="Summary">
+              <textarea value={collection.summary} onChange={(event) => updateCollection(collection.slug, { summary: event.target.value })} className="staff-input min-h-24 py-3" />
+            </Field>
+            <Field label="Cover Image Path">
+              <input value={collection.coverImage} onChange={(event) => updateCollection(collection.slug, { coverImage: event.target.value })} className="staff-input" />
+            </Field>
+            <div className="grid gap-2">
+              <p className="text-xs uppercase tracking-[0.17em] text-[#e4c982]">{collection.count} pieces</p>
+              <button type="button" onClick={() => updateCollection(collection.slug, { visible: !(collection.visible ?? true) })} className="min-h-10 border border-[#b99858]/25 px-3 text-xs uppercase tracking-[0.12em] text-[#d7cbbb]">
+                {(collection.visible ?? true) ? "Visible" : "Hidden"}
+              </button>
+              <button type="button" onClick={() => deleteCollection(collection.slug)} className="min-h-10 border border-[#7b1d31]/50 px-3 text-xs uppercase tracking-[0.12em] text-[#ffc0ca]">
+                Delete
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function InvoicesEditor({
+  invoices,
+  products,
+  selectedInvoice,
+  setSelectedInvoiceId,
+  addInvoice,
+  deleteInvoice,
+  updateInvoice,
+  addLineItemFromProduct,
+  updateLineItem,
+  removeLineItem,
+}: {
+  invoices: StaffInvoice[];
+  products: Product[];
+  selectedInvoice?: StaffInvoice;
+  setSelectedInvoiceId: (id: string) => void;
+  addInvoice: () => void;
+  deleteInvoice: (id: string) => void;
+  updateInvoice: (invoiceId: string, patch: Partial<StaffInvoice>) => void;
+  addLineItemFromProduct: (product: Product) => void;
+  updateLineItem: (lineId: string, patch: Partial<InvoiceLineItem>) => void;
+  removeLineItem: (lineId: string) => void;
+}) {
+  return (
+    <div className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+      <section className="luxury-panel p-5">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="display text-4xl text-[#fff4df]">Invoices</h2>
+          <button type="button" onClick={addInvoice} className="bg-[#b99858] px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#080604]">
+            Add
+          </button>
+        </div>
+        <div className="mt-5 grid gap-2">
+          {invoices.map((invoice) => (
+            <button
+              key={invoice.id}
+              type="button"
+              onClick={() => setSelectedInvoiceId(invoice.id)}
+              className={cn(
+                "border p-4 text-left transition",
+                selectedInvoice?.id === invoice.id ? "border-[#e4c982] bg-[#b99858]/10" : "border-[#b99858]/16 hover:border-[#b99858]/35",
+              )}
+            >
+              <p className="font-mono text-sm text-[#e4c982]">{invoice.number}</p>
+              <p className="mt-1 text-[#fff4df]">{invoice.clientName}</p>
+              <p className="mt-1 text-sm text-[#b7aa99]">{formatMoney(invoiceTotal(invoice))} · {invoice.status}</p>
+            </button>
+          ))}
+          {!invoices.length ? <p className="border border-dashed border-[#b99858]/22 p-6 text-sm text-[#8f8271]">No invoices yet.</p> : null}
+        </div>
+      </section>
+
+      {selectedInvoice ? (
+        <section className="luxury-panel p-5">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-[#e4c982]">Invoice Builder</p>
+              <h2 className="display mt-2 text-5xl text-[#fff4df]">{selectedInvoice.number}</h2>
+            </div>
+            <div className="text-right">
+              <p className="text-sm uppercase tracking-[0.16em] text-[#b7aa99]">Total</p>
+              <p className="font-mono text-3xl text-[#e4c982]">{formatMoney(invoiceTotal(selectedInvoice))}</p>
+            </div>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Field label="Client Name">
+              <input value={selectedInvoice.clientName} onChange={(event) => updateInvoice(selectedInvoice.id, { clientName: event.target.value })} className="staff-input" />
+            </Field>
+            <Field label="Status">
+              <select value={selectedInvoice.status} onChange={(event) => updateInvoice(selectedInvoice.id, { status: event.target.value as StaffInvoice["status"] })} className="staff-input">
+                {invoiceStatuses.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Email">
+              <input value={selectedInvoice.clientEmail || ""} onChange={(event) => updateInvoice(selectedInvoice.id, { clientEmail: event.target.value })} className="staff-input" />
+            </Field>
+            <Field label="Phone">
+              <input value={selectedInvoice.clientPhone || ""} onChange={(event) => updateInvoice(selectedInvoice.id, { clientPhone: event.target.value })} className="staff-input" />
+            </Field>
+          </div>
+          <Field label="Notes" className="mt-4">
+            <textarea value={selectedInvoice.notes || ""} onChange={(event) => updateInvoice(selectedInvoice.id, { notes: event.target.value })} className="staff-input min-h-24 py-3" />
+          </Field>
+
+          <div className="mt-6 border border-[#b99858]/16 p-4">
+            <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+              <h3 className="display text-3xl text-[#fff4df]">Line items</h3>
+              <select
+                value=""
+                onChange={(event) => {
+                  const product = products.find((item) => item.id === event.target.value);
+                  if (product) addLineItemFromProduct(product);
+                }}
+                className="staff-input max-w-sm"
+              >
+                <option value="">Add product to invoice...</option>
+                {products.slice(0, 80).map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {selectedInvoice.lineItems.map((item) => (
+                <article key={item.id} className="grid gap-3 border border-[#b99858]/12 p-3 xl:grid-cols-[1fr_90px_130px_130px_90px_auto] xl:items-center">
+                  <input value={item.description} onChange={(event) => updateLineItem(item.id, { description: event.target.value })} className="staff-input" />
+                  <input type="number" value={item.quantity} onChange={(event) => updateLineItem(item.id, { quantity: Number(event.target.value) })} className="staff-input" />
+                  <input type="number" value={item.unitPrice} onChange={(event) => updateLineItem(item.id, { unitPrice: Number(event.target.value) })} className="staff-input" />
+                  <input type="number" value={item.discount} onChange={(event) => updateLineItem(item.id, { discount: Number(event.target.value) })} className="staff-input" />
+                  <p className="font-mono text-[#e4c982]">{formatMoney(lineTotal(item))}</p>
+                  <button type="button" onClick={() => removeLineItem(item.id)} className="text-[#ffc0ca]">
+                    <Trash2 size={18} />
+                  </button>
+                </article>
+              ))}
+            </div>
+          </div>
+          <button type="button" onClick={() => deleteInvoice(selectedInvoice.id)} className="mt-6 border border-[#7b1d31]/50 px-5 py-3 text-sm uppercase tracking-[0.16em] text-[#ffc0ca]">
+            Delete Invoice
+          </button>
+        </section>
+      ) : null}
+    </div>
+  );
+}

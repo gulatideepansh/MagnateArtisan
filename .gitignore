@@ -37,6 +37,10 @@ yarn-error.log*
 # local runtime logs
 /logs/
 
+# local staff CMS prototype data
+/.local-cms/
+/public/staff-uploads/
+
 # vercel
 /.vercel/
 

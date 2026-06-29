@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/types";
-import { shortTitle } from "@/lib/utils";
+import { discountedPrice, formatMoney, hasDiscount, shortTitle } from "@/lib/utils";
 
 export function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
+  const isDiscounted = hasDiscount(product.discountType, product.discountValue);
+  const salePrice = discountedPrice(product.price, product.discountType, product.discountValue);
+
   return (
     <article className="group">
       <Link href={`/products/${product.slug}`} className="block">
@@ -19,6 +22,11 @@ export function ProductCard({ product, priority = false }: { product: Product; p
             />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/10 to-transparent opacity-80" />
+          {product.saleLabel || isDiscounted ? (
+            <span className="absolute left-4 top-4 bg-[#5b1625] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#fff4df]">
+              {product.saleLabel || "Private Sale"}
+            </span>
+          ) : null}
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.18em] text-[#e4c982]">
             <span>{product.collectionName}</span>
             <span className="text-[#f6efe3]">{product.imageCount} images</span>
@@ -26,7 +34,17 @@ export function ProductCard({ product, priority = false }: { product: Product; p
         </div>
         <div className="mt-4 space-y-2">
           <h3 className="display text-2xl leading-7 text-[#f6efe3]">{shortTitle(product.title, 76)}</h3>
-          <p className="text-sm text-[#b7aa99]">Starting from {product.price}</p>
+          <p className="text-sm text-[#b7aa99]">
+            Starting from{" "}
+            {isDiscounted ? (
+              <>
+                <span className="text-[#e4c982]">{formatMoney(salePrice)}</span>{" "}
+                <span className="line-through opacity-65">{formatMoney(product.price)}</span>
+              </>
+            ) : (
+              formatMoney(product.price)
+            )}
+          </p>
         </div>
       </Link>
     </article>

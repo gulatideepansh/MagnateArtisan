@@ -3,8 +3,15 @@ import collections from "@/data/collections.json";
 import siteMedia from "@/data/site-media.json";
 import type { Collection, MeasurementGuide, Product, SiteMedia } from "@/lib/types";
 
-export const products = catalog as Product[];
-export const collectionList = collections as Collection[];
+const rawCollections = collections as Collection[];
+const visibleCollectionSlugs = new Set(
+  rawCollections.filter((collection) => collection.visible !== false).map((collection) => collection.slug),
+);
+
+export const products = (catalog as Product[]).filter(
+  (product) => product.status !== "hidden" && visibleCollectionSlugs.has(product.collection),
+);
+export const collectionList = rawCollections.filter((collection) => collection.visible !== false);
 export const media = siteMedia as SiteMedia;
 
 function guideLabel(src: string) {

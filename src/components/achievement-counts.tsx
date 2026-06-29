@@ -58,14 +58,35 @@ function CountUpNumber({ start, value, suffix }: { start: boolean; value: number
 
 export function AchievementCounts() {
   const [startCounting, setStartCounting] = useState(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setStartCounting(true), 100);
-    return () => window.clearTimeout(timeout);
+    const section = sectionRef.current;
+    if (!section) return;
+
+    if (!("IntersectionObserver" in window)) {
+      const timeout = globalThis.setTimeout(() => setStartCounting(true), 0);
+      return () => globalThis.clearTimeout(timeout);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setStartCounting(true);
+        observer.disconnect();
+      },
+      {
+        rootMargin: "0px 0px -12% 0px",
+        threshold: 0.2,
+      },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <section className="relative overflow-hidden border-y border-[#b99858]/16 bg-[#0b0806] py-18">
+    <section ref={sectionRef} className="relative overflow-hidden border-y border-[#b99858]/16 bg-[#0b0806] py-18">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e4c982]/42 to-transparent" />
       <div className="atelier-shell">
         <div className="mb-9 text-center">

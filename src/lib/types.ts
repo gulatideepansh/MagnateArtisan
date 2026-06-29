@@ -5,6 +5,7 @@ export type Product = {
   slug: string;
   title: string;
   price: string;
+  description?: string;
   collection: string;
   collectionName: string;
   images: string[];
@@ -16,6 +17,12 @@ export type Product = {
   modelGender: "male" | "female";
   imageCount: number;
   whatsappNote: string;
+  status?: "published" | "draft" | "hidden";
+  saleLabel?: string;
+  discountType?: "none" | "percent" | "amount";
+  discountValue?: number;
+  tags?: string[];
+  updatedAt?: string;
 };
 
 export type Collection = {
@@ -24,6 +31,8 @@ export type Collection = {
   summary: string;
   count: number;
   coverImage: string;
+  visible?: boolean;
+  sortOrder?: number;
 };
 
 export type SiteMedia = {
