@@ -9,17 +9,29 @@ export function CollectionCard({ collection }: { collection: Collection }) {
 
   return (
     <Link href={`/collections/${collection.slug}`} className="group block">
-      <article className="relative min-h-[360px] overflow-hidden border border-white/10 bg-[#17120e]">
+      <article className="relative min-h-[410px] overflow-hidden border border-white/10 bg-[#17120e]">
         {coverImage ? (
-          <Image
-            src={coverImage}
-            alt={collection.name}
-            fill
-            sizes="(max-width: 768px) 90vw, 33vw"
-            className="object-cover opacity-72 transition duration-700 group-hover:scale-[1.035] group-hover:opacity-90"
-          />
+          <>
+            <Image
+              src={coverImage}
+              alt=""
+              fill
+              sizes="(max-width: 768px) 90vw, 33vw"
+              className="scale-105 object-cover opacity-20 blur-md"
+              aria-hidden="true"
+            />
+            <div className="absolute inset-x-3 top-3 bottom-36 overflow-hidden">
+              <Image
+                src={coverImage}
+                alt={collection.name}
+                fill
+                sizes="(max-width: 768px) 90vw, 33vw"
+                className="object-contain object-center opacity-88 transition duration-700 group-hover:scale-[1.015] group-hover:opacity-100"
+              />
+            </div>
+          </>
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/42 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050403] via-[#050403]/68 to-black/18" />
         <div className="absolute inset-x-0 bottom-0 p-6">
           <div className="mb-4 h-px w-20 bg-[#b99858]" />
           <div className="flex items-end justify-between gap-6">
