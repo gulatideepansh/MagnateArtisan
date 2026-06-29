@@ -4,7 +4,7 @@ import path from "path";
 import catalogSeed from "@/data/catalog.json";
 import collectionSeed from "@/data/collections.json";
 import type { Collection, GarmentType, Product } from "@/lib/types";
-import type { StaffCmsState } from "@/lib/staff-types";
+import type { InvoiceLineItem, StaffCmsState, StaffInvoice } from "@/lib/staff-types";
 
 const rootDir = process.cwd();
 const localCmsDir = path.join(rootDir, ".local-cms");
@@ -46,6 +46,33 @@ function collectionCounts(products: Product[], collections: Collection[]) {
   });
 }
 
+function normalizeLineItem(item: InvoiceLineItem): InvoiceLineItem {
+  const legacyDiscount = Number(item.discount || 0);
+  const discountType = item.discountType || (legacyDiscount > 0 ? "amount" : "none");
+
+  return {
+    ...item,
+    quantity: Number(item.quantity || 0),
+    unitPrice: Number(item.unitPrice || 0),
+    discountType,
+    discountValue: Number(item.discountValue ?? legacyDiscount),
+    discount: undefined,
+  };
+}
+
+function normalizeInvoice(invoice: StaffInvoice): StaffInvoice {
+  return {
+    ...invoice,
+    clientEmail: invoice.clientEmail || "",
+    clientPhone: invoice.clientPhone || "",
+    eventDate: invoice.eventDate || "",
+    notes: invoice.notes || "",
+    status: invoice.status || "draft",
+    lineItems: (invoice.lineItems || []).map(normalizeLineItem),
+    updatedAt: invoice.updatedAt || new Date().toISOString(),
+  };
+}
+
 function seedState(): StaffCmsState {
   const products = (catalogSeed as Product[]).map(normalizeProduct);
   const collections = collectionCounts(products, collectionSeed as Collection[]);
@@ -74,7 +101,7 @@ export async function readState(): Promise<StaffCmsState> {
   return {
     products,
     collections: collectionCounts(products, parsed.collections || []),
-    invoices: parsed.invoices || [],
+    invoices: (parsed.invoices || []).map(normalizeInvoice),
     updatedAt: parsed.updatedAt || new Date().toISOString(),
   };
 }
@@ -86,7 +113,7 @@ export async function writeState(state: StaffCmsState) {
   const nextState: StaffCmsState = {
     products,
     collections,
-    invoices: state.invoices || [],
+    invoices: (state.invoices || []).map(normalizeInvoice),
     updatedAt: new Date().toISOString(),
   };
   const tempPath = `${statePath}.${randomUUID()}.tmp`;

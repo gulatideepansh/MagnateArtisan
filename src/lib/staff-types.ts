@@ -6,7 +6,9 @@ export type InvoiceLineItem = {
   description: string;
   quantity: number;
   unitPrice: number;
-  discount: number;
+  discount?: number;
+  discountType?: "none" | "percent" | "amount";
+  discountValue?: number;
 };
 
 export type StaffInvoice = {

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import {
   Boxes,
+  ChevronDown,
+  Download,
   FileText,
   ImagePlus,
   Loader2,
@@ -25,6 +27,7 @@ type TabKey = "products" | "categories" | "invoices" | "publish";
 
 const garmentTypes: GarmentType[] = ["upper_body", "lower_body", "dresses"];
 const invoiceStatuses: StaffInvoice["status"][] = ["draft", "sent", "paid", "cancelled"];
+const invoiceLogoPath = "/site-media/images/Magnate_Artisians_Logo_Black_430x_cad215cc-035c-4730-9d6d-aef01ef840af_ff89df955d.png";
 
 function slugify(value: string) {
   return value
@@ -43,12 +46,194 @@ function newInvoiceNumber(count: number) {
   return `MA-${String(count + 1).padStart(4, "0")}`;
 }
 
+function lineSubtotal(item: InvoiceLineItem) {
+  return Math.max(0, Number(item.quantity || 0) * Number(item.unitPrice || 0));
+}
+
+function lineDiscountAmount(item: InvoiceLineItem) {
+  const subtotal = lineSubtotal(item);
+  const discountType = item.discountType || (item.discount ? "amount" : "none");
+  const discountValue = Number(item.discountValue ?? item.discount ?? 0);
+  if (discountType === "percent") return Math.min(subtotal, subtotal * (Math.max(0, discountValue) / 100));
+  if (discountType === "amount") return Math.min(subtotal, Math.max(0, discountValue));
+  return 0;
+}
+
 function lineTotal(item: InvoiceLineItem) {
-  return Math.max(0, item.quantity * item.unitPrice - item.discount);
+  return Math.max(0, lineSubtotal(item) - lineDiscountAmount(item));
 }
 
 function invoiceTotal(invoice: StaffInvoice) {
   return invoice.lineItems.reduce((total, item) => total + lineTotal(item), 0);
+}
+
+function invoiceSubtotal(invoice: StaffInvoice) {
+  return invoice.lineItems.reduce((total, item) => total + lineSubtotal(item), 0);
+}
+
+function invoiceDiscountTotal(invoice: StaffInvoice) {
+  return invoice.lineItems.reduce((total, item) => total + lineDiscountAmount(item), 0);
+}
+
+function invoiceDateLabel(value?: string) {
+  if (!value) return new Date().toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(value).toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+async function imageToDataUrl(src: string) {
+  const response = await fetch(src);
+  const blob = await response.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function exportInvoicePdf(invoice: StaffInvoice) {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ format: "a4", unit: "pt" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 48;
+  const gold = "#9b793e";
+  const ink = "#16110c";
+  const muted = "#6f6252";
+  let y = 46;
+
+  doc.setFillColor("#fffaf1");
+  doc.rect(0, 0, pageWidth, pageHeight, "F");
+  doc.setDrawColor(gold);
+  doc.setLineWidth(1.2);
+  doc.line(margin, y, pageWidth - margin, y);
+
+  try {
+    const logo = await imageToDataUrl(invoiceLogoPath);
+    doc.addImage(logo, "PNG", margin, y + 20, 58, 58);
+  } catch {
+    doc.setDrawColor(gold);
+    doc.rect(margin, y + 20, 58, 58);
+  }
+
+  doc.setFont("times", "normal");
+  doc.setTextColor(ink);
+  doc.setFontSize(28);
+  doc.text("Magnate Artisan", margin + 76, y + 45);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(gold);
+  doc.text("BESPOKE ATELIER", margin + 78, y + 63, { charSpace: 2.2 });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(gold);
+  doc.text("INVOICE", pageWidth - margin, y + 28, { align: "right", charSpace: 2.4 });
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(muted);
+  doc.setFontSize(10);
+  doc.text(invoice.number, pageWidth - margin, y + 48, { align: "right" });
+  doc.text(`Date: ${invoiceDateLabel(invoice.createdAt)}`, pageWidth - margin, y + 64, { align: "right" });
+  doc.text(`Status: ${invoice.status.toUpperCase()}`, pageWidth - margin, y + 80, { align: "right" });
+
+  y += 112;
+  doc.setDrawColor("#d6c49d");
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 28;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(gold);
+  doc.text("PREPARED FOR", margin, y, { charSpace: 1.8 });
+  doc.text("COMMISSION DETAILS", pageWidth / 2 + 10, y, { charSpace: 1.8 });
+
+  y += 19;
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(ink);
+  doc.setFontSize(12);
+  doc.text(invoice.clientName || "New Client", margin, y);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(muted);
+  doc.setFontSize(10);
+  doc.text(invoice.clientEmail || "Email to be confirmed", margin, y + 17);
+  doc.text(invoice.clientPhone || "Phone to be confirmed", margin, y + 34);
+  doc.text(doc.splitTextToSize("Bespoke consultation, fabric direction, embroidery detailing, fittings, and delivery coordination.", 220), pageWidth / 2 + 10, y);
+
+  y += 78;
+  doc.setDrawColor(gold);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 22;
+
+  const columns = [
+    { label: "ITEM", x: margin },
+    { label: "QTY", x: pageWidth - 244 },
+    { label: "UNIT", x: pageWidth - 192 },
+    { label: "DISCOUNT", x: pageWidth - 124 },
+    { label: "TOTAL", x: pageWidth - margin },
+  ];
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(gold);
+  doc.setFontSize(8);
+  columns.forEach((column) => doc.text(column.label, column.x, y, { align: column.label === "ITEM" ? "left" : "right", charSpace: 1.2 }));
+  y += 18;
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(ink);
+  doc.setFontSize(10);
+  invoice.lineItems.forEach((item, index) => {
+    if (y > pageHeight - 150) {
+      doc.addPage();
+      doc.setFillColor("#fffaf1");
+      doc.rect(0, 0, pageWidth, pageHeight, "F");
+      y = 54;
+    }
+    const description = doc.splitTextToSize(`${String(index + 1).padStart(2, "0")}  ${item.description}`, 250);
+    doc.text(description, margin, y);
+    doc.text(String(item.quantity || 0), pageWidth - 244, y, { align: "right" });
+    doc.text(formatMoney(item.unitPrice), pageWidth - 192, y, { align: "right" });
+    doc.text(lineDiscountAmount(item) ? formatMoney(lineDiscountAmount(item)) : "-", pageWidth - 124, y, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.text(formatMoney(lineTotal(item)), pageWidth - margin, y, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    y += Math.max(34, description.length * 13 + 14);
+    doc.setDrawColor("#eadfc6");
+    doc.line(margin, y - 12, pageWidth - margin, y - 12);
+  });
+
+  y += 18;
+  const totalsX = pageWidth - 226;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(muted);
+  doc.text("Subtotal", totalsX, y);
+  doc.text(formatMoney(invoiceSubtotal(invoice)), pageWidth - margin, y, { align: "right" });
+  y += 18;
+  doc.text("Discount", totalsX, y);
+  doc.text(formatMoney(invoiceDiscountTotal(invoice)), pageWidth - margin, y, { align: "right" });
+  y += 24;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(15);
+  doc.setTextColor(ink);
+  doc.text("Total", totalsX, y);
+  doc.text(formatMoney(invoiceTotal(invoice)), pageWidth - margin, y, { align: "right" });
+
+  if (invoice.notes) {
+    y += 42;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(gold);
+    doc.text("NOTES", margin, y, { charSpace: 1.8 });
+    y += 16;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(muted);
+    doc.setFontSize(10);
+    doc.text(doc.splitTextToSize(invoice.notes, pageWidth - margin * 2), margin, y);
+  }
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor("#827363");
+  doc.text("Magnate Artisan Bespoke Atelier - Quote subject to final measurements, fabric choice, and handwork confirmation.", pageWidth / 2, pageHeight - 36, { align: "center" });
+  doc.save(`${invoice.number}-magnate-artisan.pdf`);
 }
 
 function createBlankInvoice(count: number): StaffInvoice {
@@ -68,7 +253,8 @@ function createBlankInvoice(count: number): StaffInvoice {
         description: "Bespoke garment commission",
         quantity: 1,
         unitPrice: 0,
-        discount: 0,
+        discountType: "none",
+        discountValue: 0,
       },
     ],
     createdAt: timestamp,
@@ -314,7 +500,8 @@ export function StaffDashboard() {
           description: product.title,
           quantity: 1,
           unitPrice: discountedPrice(product.price, product.discountType, product.discountValue),
-          discount: 0,
+          discountType: "none",
+          discountValue: 0,
         },
       ],
     });
@@ -785,6 +972,79 @@ function Field({ label, children, className }: { label: string; children: ReactN
   );
 }
 
+function ProductInvoiceCombobox({ products, onSelect }: { products: Product[]; onSelect: (product: Product) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filteredProducts = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    return products
+      .filter((product) => {
+        if (product.status === "hidden") return false;
+        if (!needle) return true;
+        return `${product.title} ${product.collectionName} ${product.price}`.toLowerCase().includes(needle);
+      })
+      .slice(0, 12);
+  }, [products, search]);
+
+  function chooseProduct(product: Product) {
+    onSelect(product);
+    setSearch("");
+    setIsOpen(false);
+  }
+
+  return (
+    <div className="relative w-full md:max-w-md">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8f8271]" size={16} />
+        <input
+          value={search}
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="Search and add product..."
+          className="staff-input pr-10 pl-10"
+        />
+        <button
+          type="button"
+          onClick={() => setIsOpen((value) => !value)}
+          aria-label="Toggle product list"
+          className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center text-[#e4c982] transition hover:bg-[#b99858]/10"
+        >
+          <ChevronDown size={17} className={cn("transition", isOpen && "rotate-180")} />
+        </button>
+      </div>
+
+      {isOpen ? (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-40 max-h-96 w-full overflow-y-auto border border-[#b99858]/28 bg-[#090705] p-2 shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
+          {filteredProducts.map((product) => (
+            <button
+              key={product.id}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => chooseProduct(product)}
+              className="grid w-full grid-cols-[46px_1fr] gap-3 border-b border-[#b99858]/10 p-2 text-left transition last:border-b-0 hover:bg-[#b99858]/10"
+            >
+              <div className="relative aspect-square overflow-hidden bg-[#17120e]">
+                {product.primaryImage ? <Image src={product.primaryImage} alt="" fill sizes="46px" className="object-cover" unoptimized /> : null}
+              </div>
+              <span className="min-w-0">
+                <span className="block truncate text-sm text-[#fff4df]">{product.title}</span>
+                <span className="mt-1 block text-xs uppercase tracking-[0.12em] text-[#e4c982]">{product.collectionName}</span>
+                <span className="mt-1 block text-xs text-[#8f8271]">{formatMoney(discountedPrice(product.price, product.discountType, product.discountValue))}</span>
+              </span>
+            </button>
+          ))}
+          {!filteredProducts.length ? (
+            <p className="px-3 py-5 text-sm text-[#8f8271]">No matching products. Try a collection, color, or price.</p>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function CategoriesEditor({
   state,
   updateCollection,
@@ -859,8 +1119,8 @@ function InvoicesEditor({
   removeLineItem: (lineId: string) => void;
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
-      <section className="luxury-panel p-5">
+    <div className="grid gap-6 2xl:grid-cols-[0.62fr_1.38fr]">
+      <section className="luxury-panel min-w-0 p-5">
         <div className="flex items-center justify-between gap-4">
           <h2 className="display text-4xl text-[#fff4df]">Invoices</h2>
           <button type="button" onClick={addInvoice} className="bg-[#b99858] px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#080604]">
@@ -888,15 +1148,25 @@ function InvoicesEditor({
       </section>
 
       {selectedInvoice ? (
-        <section className="luxury-panel p-5">
+        <section className="luxury-panel min-w-0 p-5">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-[#e4c982]">Invoice Builder</p>
               <h2 className="display mt-2 text-5xl text-[#fff4df]">{selectedInvoice.number}</h2>
             </div>
-            <div className="text-right">
-              <p className="text-sm uppercase tracking-[0.16em] text-[#b7aa99]">Total</p>
-              <p className="font-mono text-3xl text-[#e4c982]">{formatMoney(invoiceTotal(selectedInvoice))}</p>
+            <div className="grid gap-3 text-left md:text-right">
+              <div>
+                <p className="text-sm uppercase tracking-[0.16em] text-[#b7aa99]">Total</p>
+                <p className="font-mono text-3xl text-[#e4c982]">{formatMoney(invoiceTotal(selectedInvoice))}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => exportInvoicePdf(selectedInvoice)}
+                className="inline-flex min-h-11 items-center justify-center gap-2 border border-[#b99858]/30 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#fff4df] transition hover:border-[#e4c982] hover:bg-[#b99858]/10"
+              >
+                <Download size={16} />
+                Export PDF
+              </button>
             </div>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -924,35 +1194,70 @@ function InvoicesEditor({
           <div className="mt-6 border border-[#b99858]/16 p-4">
             <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
               <h3 className="display text-3xl text-[#fff4df]">Line items</h3>
-              <select
-                value=""
-                onChange={(event) => {
-                  const product = products.find((item) => item.id === event.target.value);
-                  if (product) addLineItemFromProduct(product);
-                }}
-                className="staff-input max-w-sm"
-              >
-                <option value="">Add product to invoice...</option>
-                {products.slice(0, 80).map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.title}
-                  </option>
-                ))}
-              </select>
+              <ProductInvoiceCombobox products={products} onSelect={addLineItemFromProduct} />
             </div>
             <div className="mt-4 grid gap-3">
               {selectedInvoice.lineItems.map((item) => (
-                <article key={item.id} className="grid gap-3 border border-[#b99858]/12 p-3 xl:grid-cols-[1fr_90px_130px_130px_90px_auto] xl:items-center">
-                  <input value={item.description} onChange={(event) => updateLineItem(item.id, { description: event.target.value })} className="staff-input" />
-                  <input type="number" value={item.quantity} onChange={(event) => updateLineItem(item.id, { quantity: Number(event.target.value) })} className="staff-input" />
-                  <input type="number" value={item.unitPrice} onChange={(event) => updateLineItem(item.id, { unitPrice: Number(event.target.value) })} className="staff-input" />
-                  <input type="number" value={item.discount} onChange={(event) => updateLineItem(item.id, { discount: Number(event.target.value) })} className="staff-input" />
-                  <p className="font-mono text-[#e4c982]">{formatMoney(lineTotal(item))}</p>
-                  <button type="button" onClick={() => removeLineItem(item.id)} className="text-[#ffc0ca]">
+                <article key={item.id} className="grid gap-3 border border-[#b99858]/12 bg-black/15 p-3 2xl:grid-cols-[minmax(220px,1fr)_76px_116px_120px_96px_120px_auto] 2xl:items-end">
+                  <Field label="Description">
+                    <input value={item.description} onChange={(event) => updateLineItem(item.id, { description: event.target.value })} className="staff-input" />
+                  </Field>
+                  <Field label="Qty">
+                    <input type="number" min="0" value={item.quantity} onChange={(event) => updateLineItem(item.id, { quantity: Number(event.target.value) })} className="staff-input" />
+                  </Field>
+                  <Field label="Unit Price">
+                    <input type="number" min="0" value={item.unitPrice} onChange={(event) => updateLineItem(item.id, { unitPrice: Number(event.target.value) })} className="staff-input" />
+                  </Field>
+                  <Field label="Discount">
+                    <select
+                      value={item.discountType || (item.discount ? "amount" : "none")}
+                      onChange={(event) =>
+                        updateLineItem(item.id, {
+                          discountType: event.target.value as InvoiceLineItem["discountType"],
+                          discountValue: event.target.value === "none" ? 0 : item.discountValue ?? item.discount ?? 0,
+                        })
+                      }
+                      className="staff-input"
+                    >
+                      <option value="none">None</option>
+                      <option value="percent">Percent %</option>
+                      <option value="amount">Amount</option>
+                    </select>
+                  </Field>
+                  <Field label={item.discountType === "percent" ? "Percent" : "Value"}>
+                    <input
+                      type="number"
+                      min="0"
+                      value={item.discountValue ?? item.discount ?? 0}
+                      onChange={(event) => updateLineItem(item.id, { discountValue: Number(event.target.value), discount: undefined })}
+                      className="staff-input"
+                      disabled={(item.discountType || (item.discount ? "amount" : "none")) === "none"}
+                    />
+                  </Field>
+                  <div className="border border-[#b99858]/14 bg-[#17120e]/70 px-3 py-2">
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[#8f8271]">Total</p>
+                    <p className="mt-1 font-mono text-sm text-[#e4c982]">{formatMoney(lineTotal(item))}</p>
+                    {lineDiscountAmount(item) ? <p className="mt-1 text-xs text-[#b7aa99]">-{formatMoney(lineDiscountAmount(item))}</p> : null}
+                  </div>
+                  <button type="button" onClick={() => removeLineItem(item.id)} className="grid min-h-11 place-items-center border border-[#7b1d31]/45 text-[#ffc0ca] transition hover:bg-[#5b1625]/25">
                     <Trash2 size={18} />
                   </button>
                 </article>
               ))}
+            </div>
+            <div className="mt-5 ml-auto grid max-w-sm gap-2 border-t border-[#b99858]/16 pt-4 text-sm">
+              <div className="flex justify-between text-[#b7aa99]">
+                <span>Subtotal</span>
+                <span>{formatMoney(invoiceSubtotal(selectedInvoice))}</span>
+              </div>
+              <div className="flex justify-between text-[#b7aa99]">
+                <span>Line discounts</span>
+                <span>-{formatMoney(invoiceDiscountTotal(selectedInvoice))}</span>
+              </div>
+              <div className="flex justify-between text-lg font-semibold text-[#e4c982]">
+                <span>Total</span>
+                <span>{formatMoney(invoiceTotal(selectedInvoice))}</span>
+              </div>
             </div>
           </div>
           <button type="button" onClick={() => deleteInvoice(selectedInvoice.id)} className="mt-6 border border-[#7b1d31]/50 px-5 py-3 text-sm uppercase tracking-[0.16em] text-[#ffc0ca]">
