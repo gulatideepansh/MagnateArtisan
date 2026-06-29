@@ -122,7 +122,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative aspect-[4/3] overflow-hidden border border-[#b99858]/22 bg-[#17120e] shadow-[0_24px_80px_rgba(0,0,0,0.34)] lg:aspect-[16/10]">
+            <div className="relative aspect-[4/3] overflow-hidden border border-[#b99858]/22 bg-[#17120e] shadow-[0_24px_80px_rgba(0,0,0,0.34)]">
               {bespokeVideo ? (
                 <video
                   className="h-full w-full object-cover"
