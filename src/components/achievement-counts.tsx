@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 type Achievement =
   | { kind: "count" | "fabric"; value: number; suffix: string; label: string }
@@ -43,9 +44,10 @@ function CountUpNumber({
   value: number;
 }) {
   const [count, setCount] = useState(0);
+  const [hasSettled, setHasSettled] = useState(false);
   const hasRunRef = useRef(false);
   const hue = (count * 137) % 360;
-  const colorStyle = colorize
+  const colorStyle = colorize && !hasSettled
     ? {
         color: `hsl(${hue} 82% 74%)`,
         textShadow: `0 0 22px hsl(${hue} 82% 54% / 0.18)`,
@@ -58,11 +60,13 @@ function CountUpNumber({
     }
 
     hasRunRef.current = true;
+    setHasSettled(false);
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
       const timeout = window.setTimeout(() => {
         setCount(value);
+        setHasSettled(true);
       }, 0);
       return () => window.clearTimeout(timeout);
     }
@@ -75,6 +79,7 @@ function CountUpNumber({
 
         if (next >= value) {
           window.clearInterval(interval);
+          setHasSettled(true);
         }
       }, 8);
 
@@ -91,6 +96,7 @@ function CountUpNumber({
 
       if (progress >= 1) {
         window.clearInterval(interval);
+        setHasSettled(true);
       }
     }, 16);
 
@@ -98,7 +104,11 @@ function CountUpNumber({
   }, [colorize, start, value]);
 
   return (
-    <span aria-label={`${formatCount(value)}${suffix}`} style={colorStyle}>
+    <span
+      aria-label={`${formatCount(value)}${suffix}`}
+      className={cn(colorize && hasSettled && "fabric-settled-colour")}
+      style={colorStyle}
+    >
       {formatCount(count)}
       {suffix}
     </span>
