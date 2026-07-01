@@ -49,6 +49,7 @@ function CountUpNumber({
   const [hasSettled, setHasSettled] = useState(false);
   const hasRunRef = useRef(false);
   const hue = (count * 137) % 360;
+  const duration = precisionColor ? 3200 : 1500;
   const colorStyle = colorize && !hasSettled
     ? {
         color: `hsl(${hue} 82% 74%)`,
@@ -93,7 +94,6 @@ function CountUpNumber({
       return () => window.clearInterval(interval);
     }
 
-    const duration = 1500;
     const startedAt = performance.now();
 
     const interval = window.setInterval(() => {
@@ -108,7 +108,7 @@ function CountUpNumber({
     }, 16);
 
     return () => window.clearInterval(interval);
-  }, [colorize, start, value]);
+  }, [colorize, duration, start, value]);
 
   return (
     <span
