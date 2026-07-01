@@ -49,7 +49,6 @@ function CountUpNumber({
   const [hasSettled, setHasSettled] = useState(false);
   const hasRunRef = useRef(false);
   const hue = (count * 137) % 360;
-  const duration = precisionColor ? 3200 : 1500;
   const colorStyle = colorize && !hasSettled
     ? {
         color: `hsl(${hue} 82% 74%)`,
@@ -94,6 +93,7 @@ function CountUpNumber({
       return () => window.clearInterval(interval);
     }
 
+    const duration = precisionColor ? 3200 : 1500;
     const startedAt = performance.now();
 
     const interval = window.setInterval(() => {
@@ -108,7 +108,7 @@ function CountUpNumber({
     }, 16);
 
     return () => window.clearInterval(interval);
-  }, [colorize, duration, start, value]);
+  }, [colorize, precisionColor, start, value]);
 
   return (
     <span
@@ -214,7 +214,7 @@ export function AchievementCounts() {
               key={item.label}
               className="border border-[#b99858]/24 bg-[#17120e]/78 px-6 py-8 text-center shadow-[0_18px_70px_rgba(0,0,0,0.28)]"
             >
-              <p className="font-mono text-5xl font-semibold tracking-normal text-[#fff4df] md:text-6xl lg:text-5xl xl:text-6xl">
+              <p className="font-mono text-5xl font-semibold tracking-normal text-[#fff4df] md:text-6xl lg:text-4xl xl:text-5xl 2xl:text-6xl">
                 {item.kind === "typing" ? (
                   <span className="text-2xl md:text-3xl lg:text-2xl xl:text-3xl">
                     <EndlessCustomisationType start={startCounting} />
