@@ -2,13 +2,14 @@ import Image from "next/image";
 import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Scissors, Star } from "lucide-react";
 import { AchievementCounts } from "@/components/achievement-counts";
 import { ButtonLink } from "@/components/button-link";
+import { CapabilityRail } from "@/components/capability-rail";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
 import { featuredProducts, measurementGuides, media } from "@/lib/catalog";
-import { craftsmanshipMedia, originalSiteMedia, processMedia, trustMedia } from "@/lib/media-curation";
+import { craftsmanshipMedia, originalSiteMedia, processMedia } from "@/lib/media-curation";
 
 const etsyLogo = "/site-media/images/Etsy_logo_lg_rgb_2a6b6a0294.png";
 const etsyReviewHighlights = [
@@ -117,23 +118,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-y border-[#b99858]/15 bg-black/32 py-8">
-          <div className="atelier-shell overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex min-w-max gap-8">
-              {trustMedia.map((item) => (
-                <article key={item.title} className="grid w-[300px] shrink-0 grid-cols-[72px_1fr] items-center gap-4">
-                  <div className="relative aspect-square overflow-hidden border border-dashed border-[#b99858]/28 bg-[#17120e]/72">
-                    {item.src ? <Image src={item.src} alt="" fill sizes="72px" className="object-cover" /> : null}
-                  </div>
-                  <div>
-                    <h2 className="text-sm uppercase tracking-[0.16em] text-[#f6efe3]">{item.title}</h2>
-                    <p className="mt-1 text-xs leading-5 text-[#b7aa99]">{item.copy}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
+        <CapabilityRail />
 
         <AchievementCounts />
 
