@@ -34,12 +34,14 @@ function formatCount(value: number) {
 
 function CountUpNumber({
   colorize = false,
+  compactAt,
   precisionColor = false,
   start,
   suffix,
   value,
 }: {
   colorize?: boolean;
+  compactAt?: number;
   precisionColor?: boolean;
   start: boolean;
   suffix: string;
@@ -113,7 +115,11 @@ function CountUpNumber({
   return (
     <span
       aria-label={`${formatCount(value)}${suffix}`}
-      className={cn(colorize && hasSettled && "fabric-settled-colour")}
+      className={cn(
+        "inline-block whitespace-nowrap transition-[color,font-size,text-shadow] duration-300 ease-out",
+        compactAt && count >= compactAt && "text-[0.72em]",
+        colorize && hasSettled && "fabric-settled-colour",
+      )}
       style={colorStyle}
     >
       {formatCount(count)}
@@ -221,6 +227,7 @@ export function AchievementCounts() {
                   </span>
                 ) : (
                   <CountUpNumber
+                    compactAt={item.value >= 1000 ? 1000 : undefined}
                     colorize={item.kind === "fabric"}
                     precisionColor={item.kind === "precision"}
                     start={startCounting}
