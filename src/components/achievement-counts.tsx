@@ -11,6 +11,7 @@ const achievements: Achievement[] = [
   { kind: "precision", value: 100, suffix: "%", label: "Handcrafted Precision" },
   { kind: "count", value: 1200, suffix: "+", label: "Satisfied Clients" },
   { kind: "fabric", value: 200, suffix: "+", label: "Fabrics" },
+  { kind: "fabric", value: 200, suffix: "+", label: "Colours" },
   { kind: "typing", label: "Customisation Options" },
   { kind: "count", value: 20, suffix: "+", label: "Years of Experience" },
 ];
@@ -214,15 +215,15 @@ export function AchievementCounts() {
           <p className="text-xs uppercase tracking-[0.32em] text-[#e4c982]">Our Achievements</p>
           <h2 className="display mt-3 text-4xl text-[#fff4df] md:text-5xl">Proof in every fitting.</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {achievements.map((item) => (
             <article
               key={item.label}
-              className="border border-[#b99858]/24 bg-[#17120e]/78 px-6 py-8 text-center shadow-[0_18px_70px_rgba(0,0,0,0.28)]"
+              className="border border-[#b99858]/24 bg-[#17120e]/78 px-5 py-8 text-center shadow-[0_18px_70px_rgba(0,0,0,0.28)]"
             >
               <p className="font-mono text-5xl font-semibold tracking-normal text-[#fff4df] md:text-6xl lg:text-4xl xl:text-5xl 2xl:text-6xl">
                 {item.kind === "typing" ? (
-                  <span className="text-2xl md:text-3xl lg:text-2xl xl:text-3xl">
+                  <span className="block max-w-full overflow-hidden text-xl md:text-2xl lg:text-xl 2xl:text-2xl">
                     <EndlessCustomisationType start={startCounting} />
                   </span>
                 ) : (
