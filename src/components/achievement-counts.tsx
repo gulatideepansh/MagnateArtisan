@@ -10,8 +10,7 @@ type Achievement =
 const achievements: Achievement[] = [
   { kind: "precision", value: 100, suffix: "%", label: "Handcrafted Precision" },
   { kind: "count", value: 1200, suffix: "+", label: "Satisfied Clients" },
-  { kind: "fabric", value: 200, suffix: "+", label: "Fabrics" },
-  { kind: "fabric", value: 200, suffix: "+", label: "Colours" },
+  { kind: "fabric", value: 150, suffix: "+", label: "Fabrics" },
   { kind: "typing", label: "Customisation Options" },
   { kind: "count", value: 20, suffix: "+", label: "Years of Experience" },
 ];
@@ -33,16 +32,26 @@ function formatCount(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+const fabricTextureClasses = [
+  "fabric-texture-velvet",
+  "fabric-texture-satin",
+  "fabric-texture-brocade",
+  "fabric-texture-lace",
+  "fabric-texture-jacquard",
+  "fabric-texture-thread",
+  "fabric-texture-rhinestone",
+];
+
 function CountUpNumber({
-  colorize = false,
   compactAt,
+  fabricTexture = false,
   precisionColor = false,
   start,
   suffix,
   value,
 }: {
-  colorize?: boolean;
   compactAt?: number;
+  fabricTexture?: boolean;
   precisionColor?: boolean;
   start: boolean;
   suffix: string;
@@ -51,13 +60,12 @@ function CountUpNumber({
   const [count, setCount] = useState(0);
   const [hasSettled, setHasSettled] = useState(false);
   const hasRunRef = useRef(false);
-  const hue = (count * 137) % 360;
-  const colorStyle = colorize && !hasSettled
-    ? {
-        color: `hsl(${hue} 82% 74%)`,
-        textShadow: `0 0 22px hsl(${hue} 82% 54% / 0.18)`,
-      }
-    : precisionColor
+  const fabricTextureClass = fabricTexture
+    ? hasSettled
+      ? "fabric-texture-settled"
+      : fabricTextureClasses[count % fabricTextureClasses.length]
+    : undefined;
+  const colorStyle = precisionColor
       ? {
           color: `hsl(${Math.min(122, Math.round((count / value) * 122))} 78% 62%)`,
           textShadow: `0 0 22px hsl(${Math.min(122, Math.round((count / value) * 122))} 78% 45% / 0.18)`,
@@ -81,7 +89,7 @@ function CountUpNumber({
       return () => window.clearTimeout(timeout);
     }
 
-    if (colorize) {
+    if (fabricTexture) {
       let next = 0;
       const interval = window.setInterval(() => {
         next += 1;
@@ -91,7 +99,7 @@ function CountUpNumber({
           window.clearInterval(interval);
           setHasSettled(true);
         }
-      }, 8);
+      }, 22);
 
       return () => window.clearInterval(interval);
     }
@@ -111,7 +119,7 @@ function CountUpNumber({
     }, 16);
 
     return () => window.clearInterval(interval);
-  }, [colorize, precisionColor, start, value]);
+  }, [fabricTexture, precisionColor, start, value]);
 
   return (
     <span
@@ -119,7 +127,8 @@ function CountUpNumber({
       className={cn(
         "inline-block whitespace-nowrap transition-[color,font-size,text-shadow] duration-300 ease-out",
         compactAt && count >= compactAt && "text-[0.72em]",
-        colorize && hasSettled && "fabric-settled-colour",
+        fabricTexture && "fabric-texture",
+        fabricTextureClass,
       )}
       style={colorStyle}
     >
@@ -215,7 +224,7 @@ export function AchievementCounts() {
           <p className="text-xs uppercase tracking-[0.32em] text-[#e4c982]">Our Achievements</p>
           <h2 className="display mt-3 text-4xl text-[#fff4df] md:text-5xl">Proof in every fitting.</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           {achievements.map((item) => (
             <article
               key={item.label}
@@ -229,7 +238,7 @@ export function AchievementCounts() {
                 ) : (
                   <CountUpNumber
                     compactAt={item.value >= 1000 ? 1000 : undefined}
-                    colorize={item.kind === "fabric"}
+                    fabricTexture={item.kind === "fabric"}
                     precisionColor={item.kind === "precision"}
                     start={startCounting}
                     value={item.value}

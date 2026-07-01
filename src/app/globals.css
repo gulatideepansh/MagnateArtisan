@@ -153,8 +153,73 @@ button:disabled:active {
   animation: scan-line 3.6s ease-in-out infinite;
 }
 
-.fabric-settled-colour {
-  animation: fabric-colour-shift 7s ease-in-out infinite;
+.fabric-texture {
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 26px rgba(228, 201, 130, 0.16);
+}
+
+.fabric-texture-velvet {
+  background-image:
+    radial-gradient(circle at 30% 28%, rgba(255, 199, 180, 0.44), transparent 14%),
+    linear-gradient(135deg, #24060b 0%, #7f1428 42%, #130306 100%);
+  background-size: 72px 72px, 100% 100%;
+}
+
+.fabric-texture-satin {
+  background-image:
+    linear-gradient(115deg, transparent 0 18%, rgba(255, 255, 255, 0.9) 24%, transparent 31% 56%, rgba(255, 231, 172, 0.62) 64%, transparent 72%),
+    linear-gradient(135deg, #eee0bd, #b99752 46%, #fff5d8 100%);
+  background-size: 115px 100%, 100% 100%;
+}
+
+.fabric-texture-brocade {
+  background-image:
+    radial-gradient(ellipse at 22% 38%, transparent 0 22%, rgba(255, 239, 185, 0.76) 24% 30%, transparent 33%),
+    radial-gradient(ellipse at 76% 62%, transparent 0 20%, rgba(127, 29, 29, 0.88) 22% 30%, transparent 34%),
+    linear-gradient(135deg, #43200b, #d2a85b 45%, #2a0e08);
+  background-size: 46px 34px, 52px 40px, 100% 100%;
+}
+
+.fabric-texture-lace {
+  background-image:
+    radial-gradient(circle, transparent 0 28%, rgba(255, 244, 223, 0.94) 30% 36%, transparent 39%),
+    linear-gradient(135deg, #fbf1df, #bc9b71);
+  background-size: 22px 22px, 100% 100%;
+}
+
+.fabric-texture-jacquard {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.24) 0 2px, transparent 2px 9px),
+    linear-gradient(135deg, #183b32, #b9a06b 52%, #2a1621);
+}
+
+.fabric-texture-thread {
+  background-image:
+    repeating-linear-gradient(105deg, #f8dd89 0 3px, #875f21 3px 5px, #f4c95c 5px 8px),
+    linear-gradient(135deg, #3b2508, #d6a948);
+}
+
+.fabric-texture-rhinestone {
+  background-image:
+    radial-gradient(circle at 20% 30%, #ffffff 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 60%, #f6c5ff 0 2px, transparent 3px),
+    radial-gradient(circle at 44% 76%, #bcecff 0 2px, transparent 3px),
+    linear-gradient(135deg, #27133d, #d7c0ff 48%, #1b0d26);
+  background-size: 18px 18px, 23px 23px, 29px 29px, 100% 100%;
+}
+
+.fabric-texture-settled {
+  background-image:
+    radial-gradient(circle at 16% 30%, rgba(255, 255, 255, 0.82) 0 2px, transparent 3px),
+    repeating-linear-gradient(115deg, rgba(255, 232, 151, 0.95) 0 3px, rgba(89, 55, 20, 0.88) 3px 5px, rgba(233, 188, 92, 0.9) 5px 9px),
+    radial-gradient(ellipse at 70% 56%, transparent 0 18%, rgba(255, 244, 223, 0.58) 21% 30%, transparent 34%),
+    linear-gradient(135deg, #45111a, #d6a85d 42%, #223a32 72%, #191016);
+  background-size: 28px 28px, 78px 78px, 54px 42px, 180% 180%;
+  animation: fabric-texture-breathe 8s ease-in-out infinite;
 }
 
 @keyframes thread-draw {
@@ -185,27 +250,22 @@ button:disabled:active {
   }
 }
 
-@keyframes fabric-colour-shift {
+@keyframes fabric-texture-breathe {
   0%,
   100% {
-    color: #f3cf86;
-    text-shadow: 0 0 24px rgba(228, 201, 130, 0.2);
+    background-position: 0 0, 0 0, 0 0, 0% 50%;
+    filter: saturate(1) brightness(1);
+    text-shadow: 0 0 22px rgba(228, 201, 130, 0.18);
   }
-  20% {
-    color: #f08a9b;
-    text-shadow: 0 0 24px rgba(240, 138, 155, 0.2);
+  35% {
+    background-position: 10px 6px, 18px 12px, -14px 8px, 55% 50%;
+    filter: saturate(1.18) brightness(1.08);
+    text-shadow: 0 0 30px rgba(214, 168, 93, 0.26);
   }
-  40% {
-    color: #7ad4ff;
-    text-shadow: 0 0 24px rgba(122, 212, 255, 0.18);
-  }
-  60% {
-    color: #8fe8b0;
-    text-shadow: 0 0 24px rgba(143, 232, 176, 0.18);
-  }
-  80% {
-    color: #c6a1ff;
-    text-shadow: 0 0 24px rgba(198, 161, 255, 0.18);
+  70% {
+    background-position: -8px 12px, 34px 24px, 12px -10px, 100% 50%;
+    filter: saturate(1.05) brightness(0.96);
+    text-shadow: 0 0 24px rgba(255, 244, 223, 0.2);
   }
 }
 
