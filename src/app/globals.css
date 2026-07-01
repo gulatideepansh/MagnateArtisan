@@ -153,6 +153,10 @@ button:disabled:active {
   animation: scan-line 3.6s ease-in-out infinite;
 }
 
+.colour-settled {
+  animation: colour-shift 7s ease-in-out infinite;
+}
+
 .fabric-texture {
   color: transparent;
   background-clip: text;
@@ -247,6 +251,30 @@ button:disabled:active {
   50% {
     transform: translateY(92%);
     opacity: 0.62;
+  }
+}
+
+@keyframes colour-shift {
+  0%,
+  100% {
+    color: #f3cf86;
+    text-shadow: 0 0 24px rgba(228, 201, 130, 0.2);
+  }
+  20% {
+    color: #f08a9b;
+    text-shadow: 0 0 24px rgba(240, 138, 155, 0.2);
+  }
+  40% {
+    color: #7ad4ff;
+    text-shadow: 0 0 24px rgba(122, 212, 255, 0.18);
+  }
+  60% {
+    color: #8fe8b0;
+    text-shadow: 0 0 24px rgba(143, 232, 176, 0.18);
+  }
+  80% {
+    color: #c6a1ff;
+    text-shadow: 0 0 24px rgba(198, 161, 255, 0.18);
   }
 }
 

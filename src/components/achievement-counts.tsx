@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type Achievement =
-  | { kind: "count" | "fabric" | "precision"; value: number; suffix: string; label: string }
+  | { kind: "colour" | "count" | "fabric" | "precision"; value: number; suffix: string; label: string }
   | { kind: "typing"; label: string };
 
 const achievements: Achievement[] = [
   { kind: "precision", value: 100, suffix: "%", label: "Handcrafted Precision" },
   { kind: "count", value: 1200, suffix: "+", label: "Satisfied Clients" },
   { kind: "fabric", value: 150, suffix: "+", label: "Fabrics" },
+  { kind: "colour", value: 200, suffix: "+", label: "Colours" },
   { kind: "typing", label: "Customisation Options" },
   { kind: "count", value: 20, suffix: "+", label: "Years of Experience" },
 ];
@@ -44,6 +45,7 @@ const fabricTextureClasses = [
 
 function CountUpNumber({
   compactAt,
+  colourCycle = false,
   fabricTexture = false,
   precisionColor = false,
   start,
@@ -51,6 +53,7 @@ function CountUpNumber({
   value,
 }: {
   compactAt?: number;
+  colourCycle?: boolean;
   fabricTexture?: boolean;
   precisionColor?: boolean;
   start: boolean;
@@ -60,12 +63,18 @@ function CountUpNumber({
   const [count, setCount] = useState(0);
   const [hasSettled, setHasSettled] = useState(false);
   const hasRunRef = useRef(false);
+  const hue = (count * 137) % 360;
   const fabricTextureClass = fabricTexture
     ? hasSettled
       ? "fabric-texture-settled"
       : fabricTextureClasses[count % fabricTextureClasses.length]
     : undefined;
-  const colorStyle = precisionColor
+  const colorStyle = colourCycle && !hasSettled
+    ? {
+        color: `hsl(${hue} 82% 74%)`,
+        textShadow: `0 0 22px hsl(${hue} 82% 54% / 0.18)`,
+      }
+    : precisionColor
       ? {
           color: `hsl(${Math.min(122, Math.round((count / value) * 122))} 78% 62%)`,
           textShadow: `0 0 22px hsl(${Math.min(122, Math.round((count / value) * 122))} 78% 45% / 0.18)`,
@@ -87,6 +96,21 @@ function CountUpNumber({
         setHasSettled(true);
       }, 0);
       return () => window.clearTimeout(timeout);
+    }
+
+    if (colourCycle) {
+      let next = 0;
+      const interval = window.setInterval(() => {
+        next += 1;
+        setCount(next);
+
+        if (next >= value) {
+          window.clearInterval(interval);
+          setHasSettled(true);
+        }
+      }, 8);
+
+      return () => window.clearInterval(interval);
     }
 
     if (fabricTexture) {
@@ -119,7 +143,7 @@ function CountUpNumber({
     }, 16);
 
     return () => window.clearInterval(interval);
-  }, [fabricTexture, precisionColor, start, value]);
+  }, [colourCycle, fabricTexture, precisionColor, start, value]);
 
   return (
     <span
@@ -127,6 +151,7 @@ function CountUpNumber({
       className={cn(
         "inline-block whitespace-nowrap transition-[color,font-size,text-shadow] duration-300 ease-out",
         compactAt && count >= compactAt && "text-[0.72em]",
+        colourCycle && hasSettled && "colour-settled",
         fabricTexture && "fabric-texture",
         fabricTextureClass,
       )}
@@ -224,7 +249,7 @@ export function AchievementCounts() {
           <p className="text-xs uppercase tracking-[0.32em] text-[#e4c982]">Our Achievements</p>
           <h2 className="display mt-3 text-4xl text-[#fff4df] md:text-5xl">Proof in every fitting.</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {achievements.map((item) => (
             <article
               key={item.label}
@@ -238,6 +263,7 @@ export function AchievementCounts() {
                 ) : (
                   <CountUpNumber
                     compactAt={item.value >= 1000 ? 1000 : undefined}
+                    colourCycle={item.kind === "colour"}
                     fabricTexture={item.kind === "fabric"}
                     precisionColor={item.kind === "precision"}
                     start={startCounting}
