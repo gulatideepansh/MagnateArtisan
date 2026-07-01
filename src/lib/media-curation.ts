@@ -33,10 +33,51 @@ export const collectionCoverMedia: Record<string, string> = {
 };
 
 export const trustMedia = [
-  { src: originalSiteMedia.atelierCase, title: "Made to order", copy: "Consultation-led pieces, not checkout stock." },
-  { src: originalSiteMedia.designDesk, title: "Design direction", copy: "References, sketches, colors, and motifs shaped first." },
-  { src: originalSiteMedia.linen, title: "Fabric choices", copy: "Discuss cloth behavior, lining, and finish." },
-  { src: originalSiteMedia.schedule, title: "Timing clarity", copy: "Event date and delivery location lead the plan." },
+  {
+    src: "",
+    title: "Bespoke Collection",
+    copy: "Start from statement pieces shaped as references for a made-to-measure brief.",
+  },
+  {
+    src: "",
+    title: "Unlimited Digital Sketches",
+    copy: "Refine silhouette, motifs, placement, and finish before fabric is cut.",
+  },
+  {
+    src: "",
+    title: "Expert Craftsmanship",
+    copy: "Hand embroidery, ornament, lining, and finishing handled with atelier-level care.",
+  },
+  {
+    src: "",
+    title: "Perfect Fit",
+    copy: "Measurements and proportions are reviewed so the garment sits with intention.",
+  },
+  {
+    src: "",
+    title: "Experienced Couturiers",
+    copy: "Skilled makers shape complex garments, couture detail, and ceremonial structure.",
+  },
+  {
+    src: "",
+    title: "Qualified Fashion Designers",
+    copy: "Trained design direction balances silhouette, occasion, and visual impact.",
+  },
+  {
+    src: "",
+    title: "Endless Fabric Choices",
+    copy: "Explore velvet, satin, brocade, lace, suiting cloth, linings, and specialty finishes.",
+  },
+  {
+    src: "",
+    title: "Expert Guidance",
+    copy: "Get clear advice on styling, deadline, fit, embellishment level, and event presence.",
+  },
+  {
+    src: "",
+    title: "High-End Machinery",
+    copy: "Precision equipment supports clean cutting, embroidery preparation, and finishing.",
+  },
 ];
 
 export const craftsmanshipMedia = [

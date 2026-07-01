@@ -118,18 +118,20 @@ export default function Home() {
         </section>
 
         <section className="border-y border-[#b99858]/15 bg-black/32 py-8">
-          <div className="atelier-shell grid gap-4 md:grid-cols-4">
-            {trustMedia.map((item) => (
-              <article key={item.title} className="grid grid-cols-[72px_1fr] items-center gap-4">
-                <div className="relative aspect-square overflow-hidden border border-[#b99858]/25 bg-[#17120e]">
-                  <Image src={item.src} alt="" fill sizes="72px" className="object-cover" />
-                </div>
-                <div>
-                  <h2 className="text-sm uppercase tracking-[0.16em] text-[#f6efe3]">{item.title}</h2>
-                  <p className="mt-1 text-xs leading-5 text-[#b7aa99]">{item.copy}</p>
-                </div>
-              </article>
-            ))}
+          <div className="atelier-shell overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-w-max gap-8">
+              {trustMedia.map((item) => (
+                <article key={item.title} className="grid w-[300px] shrink-0 grid-cols-[72px_1fr] items-center gap-4">
+                  <div className="relative aspect-square overflow-hidden border border-dashed border-[#b99858]/28 bg-[#17120e]/72">
+                    {item.src ? <Image src={item.src} alt="" fill sizes="72px" className="object-cover" /> : null}
+                  </div>
+                  <div>
+                    <h2 className="text-sm uppercase tracking-[0.16em] text-[#f6efe3]">{item.title}</h2>
+                    <p className="mt-1 text-xs leading-5 text-[#b7aa99]">{item.copy}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
