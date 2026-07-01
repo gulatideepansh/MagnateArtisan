@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type Achievement =
-  | { kind: "count" | "fabric"; value: number; suffix: string; label: string }
+  | { kind: "count" | "fabric" | "precision"; value: number; suffix: string; label: string }
   | { kind: "typing"; label: string };
 
 const achievements: Achievement[] = [
-  { kind: "count", value: 100, suffix: "%", label: "Handcrafted Precision" },
+  { kind: "precision", value: 100, suffix: "%", label: "Handcrafted Precision" },
   { kind: "count", value: 1200, suffix: "+", label: "Satisfied Clients" },
   { kind: "fabric", value: 200, suffix: "+", label: "Fabrics" },
   { kind: "typing", label: "Customisation Options" },
@@ -34,11 +34,13 @@ function formatCount(value: number) {
 
 function CountUpNumber({
   colorize = false,
+  precisionColor = false,
   start,
   suffix,
   value,
 }: {
   colorize?: boolean;
+  precisionColor?: boolean;
   start: boolean;
   suffix: string;
   value: number;
@@ -52,6 +54,11 @@ function CountUpNumber({
         color: `hsl(${hue} 82% 74%)`,
         textShadow: `0 0 22px hsl(${hue} 82% 54% / 0.18)`,
       }
+    : precisionColor
+      ? {
+          color: `hsl(${Math.min(122, Math.round((count / value) * 122))} 78% 62%)`,
+          textShadow: `0 0 22px hsl(${Math.min(122, Math.round((count / value) * 122))} 78% 45% / 0.18)`,
+        }
     : undefined;
 
   useEffect(() => {
@@ -215,6 +222,7 @@ export function AchievementCounts() {
                 ) : (
                   <CountUpNumber
                     colorize={item.kind === "fabric"}
+                    precisionColor={item.kind === "precision"}
                     start={startCounting}
                     value={item.value}
                     suffix={item.suffix}
