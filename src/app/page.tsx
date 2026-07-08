@@ -8,7 +8,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
-import { featuredProducts, measurementGuides, media } from "@/lib/catalog";
+import { featuredProducts, media } from "@/lib/catalog";
 import { craftsmanshipMedia, originalSiteMedia, processMedia } from "@/lib/media-curation";
 
 const etsyLogo = "/site-media/images/Etsy_logo_lg_rgb_2a6b6a0294.png";
@@ -62,7 +62,6 @@ export default function Home() {
     ) ||
     media.posters.find((poster) => poster.src.includes("d9d1407a9f6f4585b10a845484cbf2c3")) ||
     media.posters[0];
-  const measurementPreview = measurementGuides.slice(0, 4);
   const bespokeVideo =
     media.videos.find((video) => video.src.includes("31120f6ec04149dba517e4adaa14c613")) || media.videos[0];
   const bespokePoster =
@@ -246,32 +245,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section className="atelier-shell py-24">
-          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-            <SectionHeading
-              title="Prepare measurements without slowing the inquiry."
-              copy="Clients can send the first brief even if sizing is not ready. These original fitting animations help them collect cleaner notes before the final confirmation."
-            />
-            <ButtonLink href="/bespoke#measurements" tone="ghost" className="justify-self-start lg:justify-self-end">
-              Prepare Measurements
-              <ArrowRight size={17} />
-            </ButtonLink>
-          </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {measurementPreview.map((guide) => (
-              <article key={guide.src} className="overflow-hidden border border-[#b99858]/22 bg-[#17120e]">
-                <div className="relative aspect-[4/3]">
-                  <Image src={guide.src} alt={`${guide.label} measurement guide`} fill sizes="25vw" className="object-cover" unoptimized />
-                </div>
-                <div className="p-5">
-                  <p className="text-xs uppercase tracking-[0.18em] text-[#e4c982]">{guide.audience}</p>
-                  <h3 className="display mt-2 text-3xl text-[#f6efe3]">{guide.label}</h3>
-                </div>
-              </article>
-            ))}
           </div>
         </section>
 
