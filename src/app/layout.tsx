@@ -19,9 +19,11 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://magnateartisan.com"),
   title: "Magnate Artisan | Bespoke Embroidered Atelier",
   description:
     "Luxury bespoke embroidered suits, couture pieces, and WhatsApp-first custom ordering for weddings, ceremonies, stagewear, and statement occasions.",
+  openGraph: { title: "Magnate Artisan | Bespoke Embroidered Atelier", description: "Bespoke statementwear, sketched and handcrafted for your entrance.", type: "website" },
 };
 
 export default function RootLayout({

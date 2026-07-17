@@ -1,10 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
+import { inquiryUrl, type PreferredContact } from "@/lib/inquiry";
 
 type InquiryState = {
   name: string;
+  email: string;
+  preferredContact: PreferredContact;
   occasion: string;
   eventDate: string;
   location: string;
@@ -16,6 +19,8 @@ type InquiryState = {
 
 const initialState: InquiryState = {
   name: "",
+  email: "",
+  preferredContact: "whatsapp",
   occasion: "",
   eventDate: "",
   location: "",
@@ -25,32 +30,11 @@ const initialState: InquiryState = {
   notes: "",
 };
 
-function line(label: string, value: string) {
-  return value.trim() ? `${label}: ${value.trim()}` : "";
-}
-
 export function BespokeInquiryForm() {
   const [state, setState] = useState(initialState);
 
   const url = useMemo(() => {
-    const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "61400000000";
-    const message = [
-      "Hello Magnate Artisan,",
-      "",
-      "I would like to begin a bespoke order.",
-      line("Name", state.name),
-      line("Occasion", state.occasion),
-      line("Event date", state.eventDate),
-      line("City / country", state.location),
-      line("Product or reference", state.reference),
-      line("Measurements status", state.measurements),
-      line("Preferred colors / fabric", state.colors),
-      line("Customization notes", state.notes),
-      "",
-      "Please help me confirm sizing, design options, timeline, and next steps.",
-    ].filter(Boolean);
-
-    return `https://wa.me/${number}?text=${encodeURIComponent(message.join("\n"))}`;
+    return inquiryUrl(state);
   }, [state]);
 
   function update(field: keyof InquiryState, value: string) {
@@ -76,6 +60,10 @@ export function BespokeInquiryForm() {
         <label className="grid gap-2">
           <span className={labelClass}>Name</span>
           <input className={inputClass} value={state.name} onChange={(event) => update("name", event.target.value)} placeholder="Your name" />
+        </label>
+        <label className="grid gap-2">
+          <span className={labelClass}>Email</span>
+          <input type="email" className={inputClass} value={state.email} onChange={(event) => update("email", event.target.value)} placeholder="you@example.com" />
         </label>
         <label className="grid gap-2">
           <span className={labelClass}>Occasion</span>
@@ -112,14 +100,22 @@ export function BespokeInquiryForm() {
         </label>
       </div>
 
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        {(["whatsapp", "email"] as PreferredContact[]).map((method) => (
+          <button key={method} type="button" onClick={() => update("preferredContact", method)} className={`inline-flex min-h-12 items-center justify-center gap-2 border uppercase tracking-[.14em] ${state.preferredContact === method ? "border-[#e4c982] bg-[#b99858]/15 text-[#fff4df]" : "border-white/10 text-[#b7aa99]"}`}>
+            {method === "whatsapp" ? <MessageCircle size={17}/> : <Mail size={17}/>} {method}
+          </button>
+        ))}
+      </div>
+
       <a
         href={url}
-        target="_blank"
+        target={state.preferredContact === "whatsapp" ? "_blank" : undefined}
         rel="noreferrer"
         className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#5b1625] px-5 text-sm font-medium uppercase tracking-[0.16em] text-[#fff4df] transition hover:bg-[#731e31]"
       >
         <MessageCircle size={17} />
-        Send Brief on WhatsApp
+        Open {state.preferredContact === "whatsapp" ? "WhatsApp" : "Email"} Brief
       </a>
     </div>
   );

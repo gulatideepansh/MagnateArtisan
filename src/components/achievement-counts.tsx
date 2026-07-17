@@ -10,7 +10,7 @@ type Achievement =
 const achievements: Achievement[] = [
   { kind: "precision", value: 100, suffix: "%", label: "Handcrafted Precision" },
   { kind: "count", value: 1200, suffix: "+", label: "Satisfied Clients" },
-  { kind: "fabric", value: 150, suffix: "+", label: "Fabrics" },
+  { kind: "fabric", value: 150, suffix: "+", label: "Fabric Directions" },
   { kind: "colour", value: 200, suffix: "+", label: "Colours" },
   { kind: "typing", label: "Customisation Options" },
   { kind: "count", value: 20, suffix: "+", label: "Years of Experience" },

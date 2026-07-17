@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Scissors, Star } from "lucide-react";
+import { ArrowRight, CalendarDays, MessageCircle, Palette, Ruler, Star } from "lucide-react";
 import { AchievementCounts } from "@/components/achievement-counts";
 import { ButtonLink } from "@/components/button-link";
 import { CapabilityRail } from "@/components/capability-rail";
@@ -8,49 +8,12 @@ import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StitchOverlay } from "@/components/stitch-overlay";
+import { Reveal } from "@/components/reveal";
 import { featuredProducts, media } from "@/lib/catalog";
-import { craftsmanshipMedia, originalSiteMedia, processMedia } from "@/lib/media-curation";
+import { originalSiteMedia, processMedia } from "@/lib/media-curation";
+import { fallbackTestimonials } from "@/data/testimonials";
 
 const etsyLogo = "/site-media/images/Etsy_logo_lg_rgb_2a6b6a0294.png";
-const etsyReviewHighlights = [
-  {
-    name: "Chelsy",
-    shop: "MagnateArtisan",
-    date: "03 Jun 2026",
-    note: "Praised the guided design process, clear communication, measurement help, and a finished jacket that went beyond expectations.",
-  },
-  {
-    name: "Etsy buyer",
-    shop: "MagnateArtisan",
-    date: "12 Jun 2026",
-    note: "Shared that a custom tuxedo was remade quickly after a sizing issue and arrived in time for the event with a better fit.",
-  },
-  {
-    name: "Tyler",
-    shop: "MagnateArtisanStudio",
-    date: "05 Jun 2026",
-    note: "Highlighted a very specific custom suit brief and said the team worked through every step until it matched the vision.",
-  },
-  {
-    name: "Thompson",
-    shop: "MagnateArtisanStudio",
-    date: "03 Jun 2026",
-    note: "Worked with the studio for months on a Versailles masquerade costume and praised the quality, pricing, and response speed.",
-  },
-  {
-    name: "Morgan",
-    shop: "Both Etsy shops",
-    date: "01 Apr 2026",
-    note: "Called the process a wonderful experience with clear back-and-forth communication, correct sizing, and eye-catching suits.",
-  },
-  {
-    name: "Randall",
-    shop: "MagnateArtisan",
-    date: "03 Jun 2026",
-    note: "Noted an excellent look and perfect fit, recommending the outfit to anyone looking for standout customwear.",
-  },
-];
-
 export default function Home() {
   const heroVideo =
     media.videos.find((video) => video.src.includes("d9d1407a9f6f4585b10a845484cbf2c3")) ||
@@ -118,6 +81,22 @@ export default function Home() {
         </section>
 
         <CapabilityRail />
+
+        <section className="relative overflow-hidden py-24 md:py-32">
+          <StitchOverlay className="opacity-45" />
+          <div className="atelier-shell relative grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
+            <Reveal>
+              <p className="eyebrow">Build your own</p>
+              <h2 className="display mt-5 text-balance text-6xl leading-[.9] text-[#fff4df] md:text-8xl">From a passing thought to a piece no one forgets.</h2>
+              <p className="mt-7 max-w-xl text-lg leading-8 text-[#b7aa99]">Choose the silhouette, palette and level of detail. Upload your references. The studio turns it into a precise conversation—and then a real garment.</p>
+              <ButtonLink href="/byo" className="mt-8" tone="gold">Enter the design studio <ArrowRight size={17}/></ButtonLink>
+            </Reveal>
+            <Reveal className="grid grid-cols-2 gap-4" delay={.12}>
+              <div className="relative aspect-[3/4] translate-y-10 overflow-hidden border border-[#b99858]/20"><Image src={originalSiteMedia.phoneSketch} alt="Digital fashion concept sketch" fill sizes="30vw" className="object-cover"/><span className="image-caption">Sketch</span></div>
+              <div className="relative aspect-[3/4] overflow-hidden border border-[#b99858]/20"><Image src={originalSiteMedia.tailoringCuffs} alt="Finished embroidered tailoring" fill sizes="30vw" className="object-cover"/><span className="image-caption">Reality</span></div>
+            </Reveal>
+          </div>
+        </section>
 
         <AchievementCounts />
 
@@ -218,32 +197,17 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="craftsmanship" className="relative overflow-hidden py-24">
-          <StitchOverlay className="opacity-50" />
-          <div className="atelier-shell relative grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div className="luxury-panel p-8">
-              <Scissors className="text-[#e4c982]" size={34} />
-              <h2 className="display mt-6 text-5xl text-[#fff4df] md:text-7xl">Made for the moment, then made to measure.</h2>
-              <p className="mt-6 leading-8 text-[#b7aa99]">
-                The site avoids checkout because these garments are not impulse purchases. Each inquiry should carry occasion, measurements, delivery date, customization notes, color direction, and reference imagery.
-              </p>
-              <ButtonLink href="/bespoke" className="mt-8" tone="wine">Start Bespoke Inquiry</ButtonLink>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {craftsmanshipMedia.map((item) => (
-                <div key={item.src} className="relative aspect-[4/5] overflow-hidden bg-[#17120e]">
-                  <Image
-                    src={item.src}
-                    alt={item.label}
-                    fill
-                    sizes="30vw"
-                    className="object-cover"
-                  />
-                  <span className="absolute left-3 top-3 bg-black/64 px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-[#e4c982]">
-                    {item.label}
-                  </span>
-                </div>
-              ))}
+        <section id="craftsmanship" className="relative overflow-hidden border-y border-[#b99858]/15 bg-[#090705] py-24 md:py-32">
+          <StitchOverlay className="opacity-45" />
+          <div className="atelier-shell relative">
+            <Reveal className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end"><div><p className="eyebrow">Anatomy of the atelier</p><h2 className="display mt-5 text-6xl leading-[.88] text-[#fff4df] md:text-8xl">Not a product line.<br/><em className="text-[#e4c982]">A chain of decisions.</em></h2></div><p className="max-w-xl text-lg leading-8 text-[#b7aa99]">This space now belongs to the making itself: four precise transformations between your first reference and the final confirmation.</p></Reveal>
+            <div className="mt-16 grid gap-px overflow-hidden border border-[#b99858]/18 bg-[#b99858]/18 lg:grid-cols-4">
+              {[
+                { no:"01", title:"Interpret", copy:"The occasion, movement and references become a clear visual direction.", image:originalSiteMedia.phoneSketch },
+                { no:"02", title:"Engineer", copy:"Proportion, pattern and fit turn the sketch into a wearable structure.", image:originalSiteMedia.cuttingTable },
+                { no:"03", title:"Embellish", copy:"Thread, stones, braid and motif placement create the signature surface.", image:originalSiteMedia.tailoringCuffs },
+                { no:"04", title:"Confirm", copy:"The finished piece is reviewed and dispatched only after client approval.", image:originalSiteMedia.fittingRoom },
+              ].map((step,index)=><Reveal key={step.no} className="group bg-[#0c0907]" delay={index*.07}><article><div className="relative aspect-[4/5] overflow-hidden"><Image src={step.image} alt={step.title} fill sizes="(max-width:1024px) 92vw, 25vw" className="object-cover opacity-70 transition duration-1000 group-hover:scale-105 group-hover:opacity-100"/><div className="absolute inset-0 bg-gradient-to-t from-[#0c0907] via-transparent to-transparent"/><span className="absolute left-5 top-5 font-mono text-sm text-[#e4c982]">{step.no}</span></div><div className="min-h-56 p-6"><h3 className="display text-4xl text-[#fff4df]">{step.title}</h3><p className="mt-4 text-sm leading-7 text-[#b7aa99]">{step.copy}</p></div></article></Reveal>)}
             </div>
           </div>
         </section>
@@ -321,7 +285,7 @@ export default function Home() {
             </div>
 
             <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {etsyReviewHighlights.map((review) => (
+              {fallbackTestimonials.slice(0, 3).map((review) => (
                 <article key={`${review.shop}-${review.name}-${review.date}`} className="group border border-[#b99858]/18 bg-[#17120e]/58 p-6 transition hover:border-[#b99858]/42 hover:bg-[#17120e]/82">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex gap-1 text-[#e4c982]" aria-label="5 out of 5 stars">
@@ -331,7 +295,7 @@ export default function Home() {
                     </div>
                     <span className="text-[10px] uppercase tracking-[0.18em] text-[#8f8271]">Etsy review</span>
                   </div>
-                  <p className="mt-5 min-h-28 text-sm leading-7 text-[#d7cbbb]">{review.note}</p>
+                  <p className="mt-5 min-h-28 text-sm leading-7 text-[#d7cbbb]">{review.quote}</p>
                   <div className="mt-6 border-t border-[#b99858]/14 pt-4">
                     <p className="text-sm font-medium text-[#fff4df]">{review.name}</p>
                     <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#b99858]">
@@ -347,6 +311,7 @@ export default function Home() {
                 Review highlights are summarized from public Etsy shop reviews for MagnateArtisan and MagnateArtisanStudio.
               </p>
               <div className="flex flex-wrap gap-3">
+                <a href="/testimonials" className="text-xs uppercase tracking-[0.16em] text-[#fff4df] transition hover:text-[#e4c982]">All client stories</a>
                 <a href="https://www.etsy.com/au/shop/MagnateArtisan?ref=shop-header-name&section_id=reviews" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-[0.16em] text-[#e4c982] transition hover:text-[#fff4df]">
                   MagnateArtisan
                 </a>

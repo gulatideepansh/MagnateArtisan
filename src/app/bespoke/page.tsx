@@ -80,6 +80,10 @@ export default function BespokePage() {
               copy="Use these fitting guides to prepare useful sizing notes before sending a custom inquiry. If the customer is unsure, they can still send the inquiry first and ask for guidance."
             />
             <div className="mt-10">
+              <div className="mb-10 grid gap-4 md:grid-cols-2">
+                <div className="border-l border-[#e4c982] bg-[#17120e]/70 p-7"><p className="eyebrow">Menswear</p><h3 className="display mt-3 text-4xl text-[#fff4df]">Measure side by side.</h3><p className="mt-3 leading-7 text-[#b7aa99]">Keep each illustration open beside you and record the body—not a favourite garment—unless the guide says otherwise.</p></div>
+                <div className="border-l border-[#e4c982] bg-[#17120e]/70 p-7"><p className="eyebrow">Womenswear</p><h3 className="display mt-3 text-4xl text-[#fff4df]">Shape with confidence.</h3><p className="mt-3 leading-7 text-[#b7aa99]">Use a flexible tape, a natural stance and a second person where possible. The atelier can review anything uncertain.</p></div>
+              </div>
               <MeasurementGuides />
             </div>
           </div>
